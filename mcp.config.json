@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "@supabase/mcp-server"
+      ],
+      "env": {
+        "SUPABASE_URL": "https://unydjalszyszoxvgocmx.supabase.co",
+        "SUPABASE_SERVICE_ROLE_KEY": "sb_publishable_kgJM40embkgUsOEY3LOiAw_jTGiX7Js"
+      }
+    }
+  }
+}
