@@ -9,7 +9,10 @@ import {
 } from "react-router-dom";
 import { AuthContext } from "./context/AuthContext";
 import Login from "./pages/Login";
-import Attendance from "./pages/Attendents";
+// import Attendance from "./pages/Attendents";
+import Attendance from "./pages/Attendance";
+
+
 import Sidebar from "./components/Sidebaar";
 import Travel from "./pages/Travel";
 import History from "./pages/History";

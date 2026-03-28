@@ -308,7 +308,7 @@ const LocalTravelHistory = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 lg:p-8">
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-5">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-5 md:sticky md:top-0 md:z-20">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
               <div>
                 <h1 className="text-2xl font-bold text-white flex items-center">
@@ -375,7 +375,7 @@ const LocalTravelHistory = () => {
             )}
           </div>
 
-          <div className="p-6">
+          <div className="p-6 md:max-h-[600px] md:overflow-y-auto">
             {isLoadingHistory ? (
               <div className="flex justify-center items-center py-12">
                 <Loader2 className="animate-spin h-8 w-8 text-green-600 mr-3" />

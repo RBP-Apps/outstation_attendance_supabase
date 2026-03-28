@@ -12,6 +12,8 @@ const Approval = () => {
     fetchLeaveRequests();
   }, []);
 
+
+  
   const fetchLeaveRequests = async () => {
     try {
       setLoading(true);
@@ -161,174 +163,309 @@ const Approval = () => {
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
-            <h1 className="text-2xl font-bold text-white">
-              Leave Approval Requests
-            </h1>
-            <p className="text-blue-100 mt-1">
-              {leaveRequests.length} pending{" "}
-              {leaveRequests.length === 1 ? "request" : "requests"}
-            </p>
-          </div>
+     <div className="sticky top-0 z-20 bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+  <h1 className="text-2xl font-bold text-white">
+    Leave Approval Requests
+  </h1>
+  <p className="text-blue-100 mt-1">
+    {leaveRequests.length} pending{" "}
+    {leaveRequests.length === 1 ? "request" : "requests"}
+  </p>
+</div>
 
-          {/* Table */}
-          <div className="overflow-x-auto">
-            {leaveRequests.length === 0 ? (
-              <div className="text-center py-12">
-                <svg
-                  className="w-16 h-16 text-gray-300 mx-auto mb-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <p className="text-gray-500 text-lg">
-                  No pending leave requests
-                </p>
-              </div>
-            ) : (
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Date & Time
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      End Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Reason
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Address
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Person Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Attachment
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {leaveRequests.map((request, index) => (
-                    <tr
-                      key={index}
-                      className="hover:bg-gray-50 transition-colors"
+
+
+          {/* Table/Card View */}
+<div className="overflow-x-auto md:max-h-[600px] md:overflow-y-auto">
+  {leaveRequests.length === 0 ? (
+    <div className="text-center py-12">
+      <svg
+        className="w-16 h-16 text-gray-300 mx-auto mb-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+      <p className="text-gray-500 text-lg">
+        No pending leave requests
+      </p>
+    </div>
+  ) : (
+    <>
+      {/* Desktop Table View - Hidden on mobile */}
+      <div className="hidden md:block">
+        <table className="w-full">
+          <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                Date & Time
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                End Date
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                Reason
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                Address
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                Person Name
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                Attachment
+              </th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                Action
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {leaveRequests.map((request, index) => (
+              <tr
+                key={index}
+                className="hover:bg-gray-50 transition-colors"
+              >
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {formatDateTime(request.dateTime) || "N/A"}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {formatDate(request.endDate)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                    {request.status}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                  {request.reason || "N/A"}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                  {request.address || "N/A"}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {request.personName || "N/A"}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {request.images ? (
+                    <a
+                      href={request.images}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatDateTime(request.dateTime) || "N/A"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatDate(request.endDate)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                          {request.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
-                        {request.reason || "N/A"}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
-                        {request.address || "N/A"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {request.personName || "N/A"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {request.images ? (
-                          <a
-                            href={request.images}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                            View
-                          </a>
-                        ) : (
-                          <span className="text-gray-400">None</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <button
-                          onClick={() => handleApprove(request)}
-                          disabled={
-                            request.approvedStatus === "Approved" ||
-                            processingId === request.rowNumber
-                          } // ✅ Add the second condition
-                          className={` ${request.approvedStatus === "Approved"
-                            ? "bg-green-600 hover:bg-green-700 focus:ring-green-500"
-                            : "bg-red-600 hover:bg-red-700 focus:ring-red-500"
-                            } inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white  focus:outline-none focus:ring-2 focus:ring-offset-2  disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors`}
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      View
+                    </a>
+                  ) : (
+                    <span className="text-gray-400">None</span>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-center">
+                  <button
+                    onClick={() => handleApprove(request)}
+                    disabled={
+                      request.approvedStatus === "Approved" ||
+                      processingId === request.rowNumber
+                    }
+                    className={`${request.approvedStatus === "Approved"
+                      ? "bg-green-600 hover:bg-green-700 focus:ring-green-500"
+                      : "bg-red-600 hover:bg-red-700 focus:ring-red-500"
+                      } inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors`}
+                  >
+                    {processingId === request.rowNumber ? (
+                      <>
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
                         >
-                          {processingId === request.rowNumber ? (
-                            <>
-                              <svg
-                                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                              >
-                                <circle
-                                  className="opacity-25"
-                                  cx="12"
-                                  cy="12"
-                                  r="10"
-                                  stroke="currentColor"
-                                  strokeWidth="4"
-                                ></circle>
-                                <path
-                                  className="opacity-75"
-                                  fill="currentColor"
-                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                ></path>
-                              </svg>
-                              Processing...
-                            </>
-                          ) : (
-                            <>
-                              <svg
-                                className="w-4 h-4 mr-2"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M5 13l4 4L19 7"
-                                />
-                              </svg>
-                              {request.approvedStatus === "Approved"
-                                ? "Approved"
-                                : "Approve"}
-                            </>
-                          )}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          className="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        {request.approvedStatus === "Approved"
+                          ? "Approved"
+                          : "Approve"}
+                      </>
+                    )}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile Card View - Visible only on mobile */}
+      <div className="md:hidden p-4 space-y-4">
+        {leaveRequests.map((request, index) => (
+          <div key={index} className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+            <div className="p-4 space-y-3">
+              {/* Header with Name and Status */}
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {request.personName || "N/A"}
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {formatDateTime(request.dateTime) || "N/A"}
+                  </p>
+                </div>
+                <span className="px-3 py-1 inline-flex text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                  {request.status}
+                </span>
+              </div>
+
+              {/* End Date */}
+              <div className="flex items-center gap-2 text-sm">
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span className="text-gray-600">
+                  <strong>End Date:</strong> {formatDate(request.endDate)}
+                </span>
+              </div>
+
+              {/* Reason */}
+              {request.reason && (
+                <div className="text-sm text-gray-600">
+                  <strong>Reason:</strong> {request.reason}
+                </div>
+              )}
+
+              {/* Address */}
+              {request.address && (
+                <div className="text-sm text-gray-600">
+                  <strong>Address:</strong> {request.address}
+                </div>
+              )}
+
+              {/* Attachment */}
+              <div className="text-sm">
+                <strong>Attachment:</strong>{" "}
+                {request.images ? (
+                  <a
+                    href={request.images}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    View Attachment
+                  </a>
+                ) : (
+                  <span className="text-gray-400">None</span>
+                )}
+              </div>
+
+              {/* Action Button */}
+              <div className="pt-2">
+                <button
+                  onClick={() => handleApprove(request)}
+                  disabled={
+                    request.approvedStatus === "Approved" ||
+                    processingId === request.rowNumber
+                  }
+                  className={`w-full ${request.approvedStatus === "Approved"
+                    ? "bg-green-600 hover:bg-green-700"
+                    : "bg-red-600 hover:bg-red-700"
+                    } inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors`}
+                >
+                  {processingId === request.rowNumber ? (
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-4 h-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      {request.approvedStatus === "Approved"
+                        ? "Approved"
+                        : "Approve"}
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
+        ))}
+      </div>
+    </>
+  )}
+</div>
 
           {/* Refresh Button */}
           <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
