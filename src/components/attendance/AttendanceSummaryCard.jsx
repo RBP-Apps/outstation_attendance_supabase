@@ -15,6 +15,7 @@ const AttendanceSummaryCard = ({
     totalPresent: 0,
     totalLeave: 0,
     totalIn: 0,
+    totalMid: 0,
     totalOut: 0,
     totalMispunch: 0,
     mispunchDetails: [],
@@ -221,6 +222,7 @@ const AttendanceSummaryCard = ({
         totalPresent: 0,
         totalLeave: 0,
         totalIn: 0,
+        totalMid:0, 
         totalOut: 0,
         totalMispunch: 0,
         mispunchDetails: [],
@@ -311,18 +313,19 @@ const AttendanceSummaryCard = ({
       const employeeName = entry.salesPersonName || "Unknown";
       const dateKey = `${employeeName}_${dateStr}`;
       
-      if (!employeeDailyRecords[dateKey]) {
-        employeeDailyRecords[dateKey] = {
-          employee: employeeName,
-          date: dateStr,
-          inCount: 0,
-          outCount: 0,
-          leaveCount: 0,
-          hasLeave: false,
-          punches: [],
-        };
-      }
-      
+   if (!employeeDailyRecords[dateKey]) {
+  employeeDailyRecords[dateKey] = {
+    employee: employeeName,
+    date: dateStr,
+    inCount: 0,
+    midCount: 0,   // ✅ ADD
+    outCount: 0,
+    leaveCount: 0,
+    hasLeave: false,
+    punches: [],
+  };
+}
+
       if (statusNormalized === "IN") {
         employeeDailyRecords[dateKey].inCount++;
         employeeDailyRecords[dateKey].punches.push({
@@ -330,7 +333,16 @@ const AttendanceSummaryCard = ({
           time: entry.dateTime,
           status: entry.status,
         });
-      } else if (statusNormalized === "OUT") {
+      } 
+      else if (statusNormalized === "MID") {
+  employeeDailyRecords[dateKey].midCount++;   // ✅ ADD
+  employeeDailyRecords[dateKey].punches.push({
+    type: "MID",
+    time: entry.dateTime,
+    status: entry.status,
+  });
+}
+      else if (statusNormalized === "OUT") {
         employeeDailyRecords[dateKey].outCount++;
         employeeDailyRecords[dateKey].punches.push({
           type: "OUT",
@@ -366,9 +378,13 @@ const AttendanceSummaryCard = ({
       
       if (dayRecord.hasLeave) {
         // Don't count leave days as present or absent
-      } else if (dayRecord.inCount > 0 || dayRecord.outCount > 0) {
-        totalPresent++;
-      }
+      } else if (
+  dayRecord.inCount > 0 &&
+  dayRecord.midCount > 0 &&
+  dayRecord.outCount > 0
+) {
+  totalPresent++;
+}
       
       const mispunchStatus = determineMispunchStatus(
         dayRecord.inCount,
@@ -618,64 +634,75 @@ const AttendanceSummaryCard = ({
       </div>
       
       <div className="p-8">
-        <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-5">
-          {/* Total Present Days */}
-          <div className="p-6 text-center transition-shadow border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl hover:shadow-lg">
-            <div className="flex justify-center mb-3">
-              <CheckCircle className="w-8 h-8 text-green-600" />
-            </div>
-            <div className="mb-1 text-3xl font-bold text-green-700">
-              {summaryData.totalPresent}
-            </div>
-            <div className="text-sm font-medium text-green-600">
-              Present Days
-            </div>
-          </div>
-          
-          {/* Total Leave Days */}
-          <div className="p-6 text-center transition-shadow border bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200 rounded-xl hover:shadow-lg">
-            <div className="flex justify-center mb-3">
-              <XCircle className="w-8 h-8 text-amber-600" />
-            </div>
-            <div className="mb-1 text-3xl font-bold text-amber-700">
-              {summaryData.totalLeave}
-            </div>
-            <div className="text-sm font-medium text-amber-600">Leave Days</div>
-          </div>
-          
-          {/* Total IN */}
-          <div className="p-6 text-center transition-shadow border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl hover:shadow-lg">
-            <div className="flex justify-center mb-3">
-              <Clock className="w-8 h-8 text-blue-600" />
-            </div>
-            <div className="mb-1 text-3xl font-bold text-blue-700">
-              {summaryData.totalIn}
-            </div>
-            <div className="text-sm font-medium text-blue-600">Total IN</div>
-          </div>
-          
-          {/* Total OUT */}
-          <div className="p-6 text-center transition-shadow border border-purple-200 bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl hover:shadow-lg">
-            <div className="flex justify-center mb-3">
-              <Clock className="w-8 h-8 text-purple-600" />
-            </div>
-            <div className="mb-1 text-3xl font-bold text-purple-700">
-              {summaryData.totalOut}
-            </div>
-            <div className="text-sm font-medium text-purple-600">Total OUT</div>
-          </div>
-          
-          {/* Total Mispunch */}
-          <div className="p-6 text-center transition-shadow border border-red-200 bg-gradient-to-br from-red-50 to-rose-50 rounded-xl hover:shadow-lg">
-            <div className="flex justify-center mb-3">
-              <AlertTriangle className="w-8 h-8 text-red-600" />
-            </div>
-            <div className="mb-1 text-3xl font-bold text-red-700">
-              {summaryData.totalMispunch}
-            </div>
-            <div className="text-sm font-medium text-red-600">Mispunch</div>
-          </div>
-        </div>
+       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+  {/* Present */}
+  <div className="flex items-center justify-between p-5 border border-green-200 rounded-xl bg-green-50 shadow-md hover:shadow-lg">
+    <div>
+      <div className="text-sm text-green-600 font-medium">Present Days</div>
+      <div className="text-2xl font-bold text-green-700">
+        {summaryData.totalPresent}
+      </div>
+    </div>
+    <CheckCircle className="w-10 h-10 text-green-600" />
+  </div>
+
+  {/* Leave */}
+  <div className="flex items-center justify-between p-5 border border-amber-200 rounded-xl bg-amber-50 shadow-md hover:shadow-lg">
+    <div>
+      <div className="text-sm text-amber-600 font-medium">Leave Days</div>
+      <div className="text-2xl font-bold text-amber-700">
+        {summaryData.totalLeave}
+      </div>
+    </div>
+    <XCircle className="w-10 h-10 text-amber-600" />
+  </div>
+
+  {/* IN */}
+  <div className="flex items-center justify-between p-5 border border-blue-200 rounded-xl bg-blue-50 shadow-md hover:shadow-lg">
+    <div>
+      <div className="text-sm text-blue-600 font-medium">Total IN</div>
+      <div className="text-2xl font-bold text-blue-700">
+        {summaryData.totalIn}
+      </div>
+    </div>
+    <Clock className="w-10 h-10 text-blue-600" />
+  </div>
+
+  {/* OUT */}
+  <div className="flex items-center justify-between p-5 border border-purple-200 rounded-xl bg-purple-50 shadow-md hover:shadow-lg">
+    <div>
+      <div className="text-sm text-purple-600 font-medium">Total OUT</div>
+      <div className="text-2xl font-bold text-purple-700">
+        {summaryData.totalOut}
+      </div>
+    </div>
+    <Clock className="w-10 h-10 text-purple-600" />
+  </div>
+
+  {/* MID */}
+  <div className="flex items-center justify-between p-5 border border-cyan-200 rounded-xl bg-cyan-50 shadow-md hover:shadow-lg">
+    <div>
+      <div className="text-sm text-cyan-600 font-medium">Total Mid</div>
+      <div className="text-2xl font-bold text-cyan-700">
+        {summaryData.totalMid}
+      </div>
+    </div>
+    <Clock className="w-10 h-10 text-cyan-600" />
+  </div>
+
+  {/* Mispunch */}
+  <div className="flex items-center justify-between p-5 border border-red-200 rounded-xl bg-red-50 shadow-md hover:shadow-lg">
+    <div>
+      <div className="text-sm text-red-600 font-medium">Mispunch</div>
+      <div className="text-2xl font-bold text-red-700">
+        {summaryData.totalMispunch}
+      </div>
+    </div>
+    <AlertTriangle className="w-10 h-10 text-red-600" />
+  </div>
+
+</div>
         
         {/* Mispunch Details Section */}
         {summaryData.mispunchDetails.length > 0 && (

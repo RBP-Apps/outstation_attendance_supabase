@@ -45,7 +45,7 @@ const AttendanceForm = ({
         try {
           const { data, error } = await supabase
             .from('users')
-            .select('in_feild')
+            .select('in_office')
             .eq('user_name', currentUser.username)
             .single();
 
@@ -54,10 +54,10 @@ const AttendanceForm = ({
             // Explicitly treat null or empty as 'no' (office worker)
             const status = (data.in_feild === 'yes') ? 'yes' : 'no';
             setUserInField(status);
-            console.log("Finalized in_feild status:", status);
+            console.log("Finalized in_office status:", status);
           }
         } catch (err) {
-          console.error("Error fetching in_feild status:", err);
+          console.error("Error fetching in_office status:", err);
           // Fallback to localStorage if Supabase fetch fails
           const fallback = localStorage.getItem("InFiled") || "no";
           setUserInField(fallback);
