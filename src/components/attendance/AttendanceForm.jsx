@@ -239,7 +239,10 @@ const AttendanceForm = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const isFieldWorker = userInField === "yes";
+const isOfficeUser =
+  String(currentUser?.in_office || "").toLowerCase() === "yes";
+
+
 
     if (!validateForm()) {
       showToast("Please fill in all required fields correctly.", "error");
@@ -251,10 +254,10 @@ const AttendanceForm = ({
       return;
     }
 
-    if (
-      (formData.status === "IN" || formData.status === "OUT" || formData.status === "MID") &&
-      !formData.image
-    ) {
+   if (
+  (formData.status === "IN" || formData.status === "OUT" || formData.status === "MID") &&
+  isOfficeUser
+) {
       showToast("Please capture a photo before submitting", "error");
       setIsSubmitting(false);
       return;
@@ -308,7 +311,7 @@ const AttendanceForm = ({
 
         if (
           (formData.status === "IN" || formData.status === "OUT" || formData.status === "MID") &&
-          !isFieldWorker
+          isOfficeUser
         ) {
           const distance = calculateDistance(
             currentLocation.latitude,
