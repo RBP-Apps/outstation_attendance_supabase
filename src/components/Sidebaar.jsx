@@ -14,6 +14,7 @@ import {
   Clock,
   Send,
   MoveRight,
+  FileText,
 } from "lucide-react";
 
 import { AuthContext } from "../context/AuthContext";
@@ -79,6 +80,12 @@ function Sidebar({ userType, username, tabs = [] }) {
       label: "License",
       icon: Shield,
       href: "/license",
+      color: "text-purple-500",
+    },
+    {
+      label: "Report",
+      icon: FileText,
+      href: "/report",
       color: "text-purple-500",
     },
   ];

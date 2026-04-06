@@ -12,6 +12,8 @@ import Login from "./pages/Login";
 // import Attendance from "./pages/Attendents";
 import Attendance from "./pages/Attendance";
 
+import supabase from "./utils/supabase"
+
 
 import Sidebar from "./components/Sidebaar";
 import Travel from "./pages/Travel";
@@ -23,11 +25,10 @@ import LocalTravelHistory from "./pages/LocalTravelHistory";
 import AdvanceRequest from "./pages/Advance";
 import Approval from "./pages/Approval";
 
-const App = () => {
-  // CRITICAL FIX: Initialize auth state from localStorage SYNCHRONOUSLY
-  // Using lazy initializer functions to read from localStorage on first render
-  // This prevents the flash of login page on page reload
+import Report from "./pages/Report";
 
+const App = () => {
+ 
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     // Synchronously check localStorage on initial render
     const auth = localStorage.getItem("isAuthenticated");
@@ -66,11 +67,7 @@ const App = () => {
     return [];
   });
 
-  // Spreadsheet ID for Google Sheets data
-  const SPREADSHEET_ID = "10coGuAVkdMNVUoX_L2HedehSb7d5lpgGQHTNjAZiGaQ";
 
-  // This useEffect is now only for listening to storage changes (e.g., from other tabs)
-  // The initial state is already set synchronously above
   useEffect(() => {
     // Listen for storage changes from other tabs
     const handleStorageChange = (e) => {
@@ -95,98 +92,79 @@ const App = () => {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  const login = async (username, password) => {
-    try {
-      const masterSheetUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=Master`;
-      const response = await fetch(masterSheetUrl);
-      const text = await response.text();
+const login = async (username, password) => {
+  try {
+    // 🔥 Supabase se data fetch
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("user_name", username)
+      .eq("password", password)
+      .single();
 
-      const jsonStart = text.indexOf("{");
-      const jsonEnd = text.lastIndexOf("}") + 1;
-      const jsonData = text.substring(jsonStart, jsonEnd);
-      const data = JSON.parse(jsonData);
-
-      if (!data?.table?.rows) {
-        showNotification(
-          "Failed to fetch user data from Master sheet.",
-          "error"
-        );
-        return false;
-      }
-
-      const rows = data.table.rows;
-
-      console.log("rows", rows);
-
-      const foundUserRow = rows.find((row) => {
-        const rowUsername = row.c?.[1]?.v;
-        const rowPassword = row.c?.[2]?.v;
-
-        return (
-          String(rowUsername) === String(username) &&
-          String(rowPassword) === String(password)
-        );
-      });
-
-      if (foundUserRow) {
-        const accessValue = foundUserRow.c?.[4]?.v;
-
-        const InFiled = foundUserRow.c?.[5]?.v;
-
-        let userTabs = [];
-
-        if (accessValue === "all") {
-          userTabs = [
-            "History",
-            "Travel",
-            "Approval",
-            "Attendance",
-            "Video",
-            "License",
-            "Local Travel",
-            "Local Travel History",
-            "OTR",
-          ];
-        } else if (accessValue && typeof accessValue === "string") {
-          userTabs = accessValue
-            .split(",")
-            .map((t) => t.trim())
-            .filter(Boolean);
-        }
-
-        const userInfo = {
-          username: username,
-          salesPersonName: foundUserRow.c?.[0]?.v || "Unknown Sales Person",
-          role: foundUserRow.c?.[3]?.v || "user",
-          loginTime: new Date().toISOString(),
-          tabs: userTabs,
-        };
-
-        setIsAuthenticated(true);
-        setCurrentUser(userInfo);
-        setUserType(userInfo.role);
-        setTabs(userInfo.tabs);
-
-        localStorage.setItem("isAuthenticated", "true");
-        localStorage.setItem("currentUser", JSON.stringify(userInfo));
-        localStorage.setItem("userType", userInfo.role);
-        localStorage.setItem("InFiled", InFiled);
-
-        showNotification(
-          `Welcome, ${userInfo.salesPersonName || username}!`,
-          "success"
-        );
-        return true;
-      } else {
-        showNotification("Invalid username or password", "error");
-        return false;
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      showNotification("An error occurred during login", "error");
+    if (error || !data) {
+      showNotification("Invalid username or password", "error");
       return false;
     }
-  };
+
+    // 🔥 access logic (same as before)
+    const accessValue = data.access;
+    const InFiled = data.in_office;
+
+    let userTabs = [];
+
+    if (accessValue === "all") {
+      userTabs = [
+        "History",
+        "Travel",
+        "Approval",
+        "Attendance",
+        "Video",
+        "License",
+        "Local Travel",
+        "Local Travel History",
+        "OTR",
+        "Report",
+      ];
+    } else if (accessValue && typeof accessValue === "string") {
+      userTabs = accessValue
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+    }
+
+    // 🔥 user object same structure (NO CHANGE)
+    const userInfo = {
+      username: data.user_name,
+      salesPersonName: data.sales_person_name || "Unknown",
+      role: data.admin || "user",
+      loginTime: new Date().toISOString(),
+      tabs: userTabs,
+    };
+
+    // 🔥 same state logic
+    setIsAuthenticated(true);
+    setCurrentUser(userInfo);
+    setUserType(userInfo.role);
+    setTabs(userInfo.tabs);
+
+    localStorage.setItem("isAuthenticated", "true");
+    localStorage.setItem("currentUser", JSON.stringify(userInfo));
+    localStorage.setItem("userType", userInfo.role);
+    localStorage.setItem("InFiled", InFiled);
+
+    showNotification(
+      `Welcome, ${userInfo.salesPersonName || username}!`,
+      "success"
+    );
+
+    return true;
+  } catch (error) {
+    console.error("Login error:", error);
+    showNotification("An error occurred during login", "error");
+    return false;
+  }
+};
 
   const logout = () => {
     setIsAuthenticated(false);
@@ -341,6 +319,14 @@ const App = () => {
                     element={
                       <ProtectedRoute>
                         <AdvanceRequest />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/report"
+                    element={
+                      <ProtectedRoute>
+                        <Report />
                       </ProtectedRoute>
                     }
                   />

@@ -9,7 +9,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useContext(AuthContext); // This correctly gets the login function
+  const { login } = useContext(AuthContext); 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -28,7 +28,6 @@ function Login() {
       if (success) {
         navigate("/");
       } else {
-        // setError already handled by showNotification in App.js login function
         setError("Invalid username or password"); // Keep this for immediate feedback if showNotification isn't preferred here
       }
     } catch (err) {

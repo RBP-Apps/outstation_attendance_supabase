@@ -19,7 +19,6 @@ const LocalTravelHistory = () => {
   const salesPersonName = currentUser?.salesPersonName || currentUser?.username || "Unknown User";
   const userRole = currentUser?.role || "User";
 
-  const SPREADSHEET_ID = "10coGuAVkdMNVUoX_L2HedehSb7d5lpgGQHTNjAZiGaQ";
 
   const showToast = (message, type = "success") => {
     const toast = document.createElement("div");

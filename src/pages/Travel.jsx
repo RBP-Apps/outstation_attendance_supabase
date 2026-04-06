@@ -19,21 +19,11 @@ const Travel = () => {
   const salesPersonName = currentUser?.salesPersonName || "Unknown User";
   const userRole = currentUser?.role || "User";
 
-  const SPREADSHEET_ID = "10coGuAVkdMNVUoX_L2HedehSb7d5lpgGQHTNjAZiGaQ";
-  const APPS_SCRIPT_URL =
-    "https://script.google.com/macros/s/AKfycbylk0DYGG9b3iru8zGT8e6yPmEEFShWppHX3YsAM9M_OUbogsHNtcdg3CZaL5Y35EHnkg/exec";
-  const DRIVE_FOLDER_ID = "1W4vfmH4c_MSp76VjPlY0tkUsarJhPIyc";
-
   const formatDateInput = (date) => {
     return date.toISOString().split("T")[0];
   };
 
-  const formatDateDDMMYYYY = (date) => {
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
+
 
   const formatDateTime = (date) => {
     const day = String(date.getDate()).padStart(2, "0");
