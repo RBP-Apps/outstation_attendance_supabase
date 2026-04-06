@@ -26,6 +26,7 @@ import AdvanceRequest from "./pages/Advance";
 import Approval from "./pages/Approval";
 
 import Report from "./pages/Report";
+import User from "./pages/Adduser"
 
 const App = () => {
  
@@ -113,7 +114,7 @@ const login = async (username, password) => {
 
     let userTabs = [];
 
-    if (accessValue === "all") {
+    if (accessValue?.toLowerCase().trim() === "all") {
       userTabs = [
         "History",
         "Travel",
@@ -125,6 +126,7 @@ const login = async (username, password) => {
         "Local Travel History",
         "OTR",
         "Report",
+        "User",
       ];
     } else if (accessValue && typeof accessValue === "string") {
       userTabs = accessValue
@@ -157,6 +159,8 @@ const login = async (username, password) => {
       `Welcome, ${userInfo.salesPersonName || username}!`,
       "success"
     );
+
+    
 
     return true;
   } catch (error) {
@@ -327,6 +331,14 @@ const login = async (username, password) => {
                     element={
                       <ProtectedRoute>
                         <Report />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/user"
+                    element={
+                      <ProtectedRoute>
+                        <User />
                       </ProtectedRoute>
                     }
                   />

@@ -88,6 +88,12 @@ function Sidebar({ userType, username, tabs = [] }) {
       href: "/report",
       color: "text-purple-500",
     },
+    {
+      label: "User",
+      icon: User,
+      href: "/user",
+      color: "text-purple-500",
+    },
   ];
 
   // If no tabs are specified or tabs array is empty, show all routes
