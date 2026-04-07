@@ -37,7 +37,6 @@ const getStatusColor = (status) => {
     case 'PRESENT': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
     case 'PARTIAL': return 'bg-amber-100 text-amber-700 border-amber-200';
     case 'ABSENT': return 'bg-rose-100 text-rose-700 border-rose-200';
-    case 'LEAVE': return 'bg-blue-100 text-blue-700 border-blue-200';
     default: return 'bg-slate-100 text-slate-700 border-slate-200';
   }
 };
@@ -52,6 +51,7 @@ const GroupedReport = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("table"); // 'table' or 'map' or 'charts'
   const [selectedDayRecords, setSelectedDayRecords] = useState(null); // For Modal
+  const [isTodayActive, setIsTodayActive] = useState(false);
   
   // Filters State
   const [filters, setFilters] = useState({
@@ -99,11 +99,12 @@ const GroupedReport = () => {
 
   // --- Grouping & Logic ---
   const processedData = useMemo(() => {
-    if (!attendanceRecords.length) return [];
-
     const grouped = {};
+    const today = new Date().toISOString().split('T')[0];
+    const isTodayView = filters.startDate === today && filters.endDate === today;
 
-    attendanceRecords.forEach(rec => {
+    // First, process existing attendance records
+    attendanceRecords.forEach((rec) => {
       const key = `${rec.person_name}_${rec.date}`;
       if (!grouped[key]) {
         grouped[key] = {
@@ -135,29 +136,54 @@ const GroupedReport = () => {
       if (rec.status === 'MID') {
         grouped[key].midEntries.push(rec.time);
       }
-      
+
       // Update latest info
       grouped[key].location = rec.address || grouped[key].location;
       if (rec.images) grouped[key].latestImage = rec.images;
       if (rec.map_link) grouped[key].mapLink = rec.map_link;
     });
 
-    // Finalize groups
+    // If "Today" view is active, ensure all users are present in "grouped" for today
+    if (isTodayView && users.length > 0) {
+      users.forEach(user => {
+        const key = `${user.sales_person_name}_${today}`;
+        if (!grouped[key]) {
+          grouped[key] = {
+            name: user.sales_person_name,
+            date: today,
+            records: [],
+            firstIn: null,
+            lastOut: null,
+            midEntries: [],
+            totalHours: 0,
+            location: 'N/A',
+            city: 'Unknown',
+            latestImage: null,
+            mapLink: null,
+            lat: null,
+            lng: null,
+            status: 'Absent'
+          };
+        }
+      });
+    }
+
+    // Finalize groups and calculate status
     return Object.values(grouped).map(group => {
       const hours = calculateHours(group.firstIn, group.lastOut);
       group.totalHours = hours;
-      
-      if (group.firstIn && group.lastOut) {
+
+      if (group.firstIn && group.midEntries.length > 0 && group.lastOut) {
         group.status = 'Present';
-      } else if (group.records.some(r => r.status === 'Leave')) {
-        group.status = 'Leave';
+      } else if (!group.firstIn && group.midEntries.length === 0 && !group.lastOut) {
+        group.status = 'Absent';
       } else {
         group.status = 'Partial';
       }
-      
+
       return group;
     });
-  }, [attendanceRecords]);
+  }, [attendanceRecords, users, filters.startDate, filters.endDate]);
 
   // --- Filtering ---
   const filteredData = useMemo(() => {
@@ -178,7 +204,6 @@ const GroupedReport = () => {
     const totalUsers = users.length;
     const presentToday = filteredData.filter(d => d.status === 'Present').length;
     const partialToday = filteredData.filter(d => d.status === 'Partial').length;
-    const leaveToday = filteredData.filter(d => d.status === 'Leave').length;
     const avgHours = filteredData.length > 0 
       ? (filteredData.reduce((acc, curr) => acc + curr.totalHours, 0) / filteredData.length).toFixed(1)
       : 0;
@@ -187,14 +212,13 @@ const GroupedReport = () => {
       totalUsers,
       present: presentToday,
       partial: partialToday,
-      absent: Math.max(0, totalUsers - (presentToday + partialToday + leaveToday)),
+      absent: Math.max(0, totalUsers - (presentToday + partialToday )),
       avgHours
     };
   }, [filteredData, users]);
 
   // --- Charts Data ---
   const chartData = useMemo(() => {
-    // Attendance per User
     const userMap = {};
     filteredData.forEach(d => {
       userMap[d.name] = (userMap[d.name] || 0) + 1;
@@ -283,17 +307,61 @@ const GroupedReport = () => {
     window.print();
   };
 
+  // const clearFilters = () => {
+  //   setFilters({
+  //     startDate: "",
+  //     endDate: "",
+  //     month: "",
+  //     year: new Date().getFullYear().toString(),
+  //     userName: "",
+  //     status: [],
+  //     location: ""
+  //   });
+  // };
+
+
   const clearFilters = () => {
-    setFilters({
-      startDate: "",
-      endDate: "",
-      month: "",
-      year: new Date().getFullYear().toString(),
-      userName: "",
-      status: [],
-      location: ""
-    });
-  };
+  setFilters({
+    startDate: "",
+    endDate: "",
+    month: "",
+    year: new Date().getFullYear().toString(),
+    userName: "",
+    status: [],
+    location: ""
+  });
+
+  setIsTodayActive(false); // 🔥 ADD THIS
+};
+
+
+  // const setTodayFilter = () => {
+  //   const today = new Date().toISOString().split('T')[0];
+  //   setFilters({
+  //     startDate: today,
+  //     endDate: today,
+  //     month: "",
+  //     year: new Date().getFullYear().toString(),
+  //     userName: "",
+  //     status: [],
+  //     location: ""
+  //   });
+  // };
+
+  const setTodayFilter = () => {
+  const today = new Date().toISOString().split('T')[0];
+  setFilters({
+    startDate: today,
+    endDate: today,
+    month: "",
+    year: new Date().getFullYear().toString(),
+    userName: "",
+    status: [],
+    location: ""
+  });
+
+  setIsTodayActive(true); // 🔥 ADD THIS
+};
 
   if (isLoading) {
     return (
@@ -438,11 +506,29 @@ const GroupedReport = () => {
             </select>
           </div>
 
-          {/* Clear Filters */}
-          <div className="flex items-end">
+          {/* Filter Actions */}
+          <div className="flex items-end gap-2 lg:col-span-1">
+            {/* <button 
+              onClick={setTodayFilter}
+              className="flex-1 bg-blue-600 text-white font-medium py-2 px-3 rounded-lg hover:bg-blue-700 transition-all text-sm flex items-center justify-center gap-2 shadow-sm"
+            >
+              Today
+            </button> */}
+            <button 
+  onClick={setTodayFilter}
+  disabled={isTodayActive}
+  className={`flex-1 font-medium py-2 px-3 rounded-lg transition-all text-sm flex items-center justify-center gap-2 shadow-sm
+    ${isTodayActive 
+      ? "bg-gray-400 text-white cursor-not-allowed" 
+      : "bg-blue-600 text-white hover:bg-blue-700"
+    }
+  `}
+>
+  Today
+</button>
             <button 
               onClick={clearFilters}
-              className="w-full bg-gray-700 text-white font-medium py-2 px-3 rounded-lg hover:bg-gray-800 transition-all text-sm flex items-center justify-center gap-2"
+              className="flex-1 bg-gray-100 text-gray-700 font-medium py-2 px-3 rounded-lg hover:bg-gray-200 transition-all text-sm flex items-center justify-center gap-2"
             >
               <X className="w-3 h-3" />
               Reset
@@ -453,7 +539,7 @@ const GroupedReport = () => {
         {/* Multi-Status Filter */}
         <div className="flex flex-wrap items-center gap-2 pt-2">
           <label className="text-xs font-medium text-gray-600 mr-2">Status:</label>
-          {['Present', 'Partial', 'Absent', 'Leave'].map(s => (
+          {['Present', 'Partial', 'Absent',].map(s => (
             <button
               key={s}
               onClick={() => {
