@@ -264,18 +264,19 @@ const AttendanceHistory = ({
                 <label className="block mb-1 text-sm font-medium text-blue-100">
                   Filter by Name
                 </label>
-                <select
+                <input
+                  type="text"
+                  list="desktop-name-list"
+                  placeholder="All Names"
                   value={filters.name}
                   onChange={(e) => handleFilterChange("name", e.target.value)}
                   className="w-full px-3 py-2 text-sm border rounded-lg bg-white/90 border-white/30 text-slate-700 focus:ring-2 focus:ring-white/50 focus:border-white/50"
-                >
-                  <option value="">All Names</option>
+                />
+                <datalist id="desktop-name-list">
                   {getUniqueNames(attendanceData || []).map((name) => (
-                    <option key={name} value={name}>
-                      {name}
-                    </option>
+                    <option key={name} value={name} />
                   ))}
-                </select>
+                </datalist>
               </div>
 
               {/* Status Filter */}
@@ -283,16 +284,19 @@ const AttendanceHistory = ({
                 <label className="block mb-1 text-sm font-medium text-blue-100">
                   Filter by Status
                 </label>
-                <select
+                <input
+                  type="text"
+                  list="desktop-status-list"
+                  placeholder="All Status"
                   value={filters.status}
                   onChange={(e) => handleFilterChange("status", e.target.value)}
                   className="w-full px-3 py-2 text-sm border rounded-lg bg-white/90 border-white/30 text-slate-700 focus:ring-2 focus:ring-white/50 focus:border-white/50"
-                >
-                  <option value="">All Status</option>
-                  <option value="IN">IN</option>
-                  <option value="OUT">OUT</option>
-                  <option value="Leave">Leave</option>
-                </select>
+                />
+                <datalist id="desktop-status-list">
+                  <option value="IN" />
+                  <option value="OUT" />
+                  <option value="Leave" />
+                </datalist>
               </div>
 
               {/* Month Filter */}
@@ -300,26 +304,30 @@ const AttendanceHistory = ({
                 <label className="block mb-1 text-sm font-medium text-blue-100">
                   Filter by Month
                 </label>
-                <select
+                <input
+                  type="text"
+                  list="desktop-month-list"
+                  placeholder="All Months"
                   value={filters.month}
                   onChange={(e) => handleFilterChange("month", e.target.value)}
                   className="w-full px-3 py-2 text-sm border rounded-lg bg-white/90 border-white/30 text-slate-700 focus:ring-2 focus:ring-white/50 focus:border-white/50"
-                >
-                  <option value="">All Months</option>
+                />
+                <datalist id="desktop-month-list">
                   {getAvailableMonths(attendanceData || []).map((monthYear) => (
-                    <option key={monthYear} value={monthYear}>
-                      {monthYear}
-                    </option>
+                    <option key={monthYear} value={monthYear} />
                   ))}
-                </select>
+                </datalist>
               </div>
 
               {/* Clear Filters Button */}
               <div>
+                <label className="block mb-1 text-sm font-medium text-transparent select-none">
+                  Clear
+                </label>
                 {hasActiveFilters && (
                   <button
                     onClick={clearFilters}
-                    className="w-full px-3 py-2 text-sm text-white transition-colors border rounded-lg bg-white/20 hover:bg-white/30 border-white/30"
+                    className="w-full px-3 py-2 text-sm font-bold text-white transition-colors bg-red-600 border border-red-500 rounded-lg shadow-sm hover:bg-red-700 focus:ring-2 focus:ring-red-400"
                   >
                     Clear Filters
                   </button>
@@ -359,58 +367,63 @@ const AttendanceHistory = ({
                     <label className="block mb-1 text-sm font-medium text-blue-100">
                       Filter by Name
                     </label>
-                    <select
+                    <input
+                      type="text"
+                      list="mobile-name-list"
+                      placeholder="All Names"
                       value={filters.name}
                       onChange={(e) => handleFilterChange("name", e.target.value)}
-                      className="w-full px-3 py-2 text-sm border rounded-lg bg-white/90 border-white/30 text-slate-700"
-                    >
-                      <option value="">All Names</option>
+                      className="w-full px-3 py-2 text-sm border rounded-lg bg-white/90 border-white/30 text-slate-700 focus:ring-2 focus:ring-white/50 focus:border-white/50"
+                    />
+                    <datalist id="mobile-name-list">
                       {getUniqueNames(attendanceData || []).map((name) => (
-                        <option key={name} value={name}>
-                          {name}
-                        </option>
+                        <option key={name} value={name} />
                       ))}
-                    </select>
+                    </datalist>
                   </div>
 
                   <div>
                     <label className="block mb-1 text-sm font-medium text-blue-100">
                       Filter by Status
                     </label>
-                    <select
+                    <input
+                      type="text"
+                      list="mobile-status-list"
+                      placeholder="All Status"
                       value={filters.status}
                       onChange={(e) => handleFilterChange("status", e.target.value)}
-                      className="w-full px-3 py-2 text-sm border rounded-lg bg-white/90 border-white/30 text-slate-700"
-                    >
-                      <option value="">All Status</option>
-                      <option value="IN">IN</option>
-                      <option value="OUT">OUT</option>
-                      <option value="Leave">Leave</option>
-                    </select>
+                      className="w-full px-3 py-2 text-sm border rounded-lg bg-white/90 border-white/30 text-slate-700 focus:ring-2 focus:ring-white/50 focus:border-white/50"
+                    />
+                    <datalist id="mobile-status-list">
+                      <option value="IN" />
+                      <option value="OUT" />
+                      <option value="Leave" />
+                    </datalist>
                   </div>
 
                   <div>
                     <label className="block mb-1 text-sm font-medium text-blue-100">
                       Filter by Month
                     </label>
-                    <select
+                    <input
+                      type="text"
+                      list="mobile-month-list"
+                      placeholder="All Months"
                       value={filters.month}
                       onChange={(e) => handleFilterChange("month", e.target.value)}
-                      className="w-full px-3 py-2 text-sm border rounded-lg bg-white/90 border-white/30 text-slate-700"
-                    >
-                      <option value="">All Months</option>
+                      className="w-full px-3 py-2 text-sm border rounded-lg bg-white/90 border-white/30 text-slate-700 focus:ring-2 focus:ring-white/50 focus:border-white/50"
+                    />
+                    <datalist id="mobile-month-list">
                       {getAvailableMonths(attendanceData || []).map((monthYear) => (
-                        <option key={monthYear} value={monthYear}>
-                          {monthYear}
-                        </option>
+                        <option key={monthYear} value={monthYear} />
                       ))}
-                    </select>
+                    </datalist>
                   </div>
 
                   {hasActiveFilters && (
                     <button
                       onClick={clearFilters}
-                      className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm text-white transition-colors border rounded-lg bg-white/20 hover:bg-white/30 border-white/30"
+                      className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-bold text-white transition-colors border border-red-500 rounded-lg shadow-sm bg-red-600 hover:bg-red-700 focus:ring-2 focus:ring-red-400 mt-2"
                     >
                       <X className="w-4 h-4" />
                       Clear All Filters
@@ -437,7 +450,7 @@ const AttendanceHistory = ({
       </div>
 
       {/* Content Area */}
-      <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
+      <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
         {!attendanceData || attendanceData.length === 0 ? (
           <div className="p-8 text-center">
             <div className="mb-2 text-lg text-slate-400">📊</div>

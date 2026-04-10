@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo, useContext } from "react";
-import { 
-  Download, Calendar, Clock, MapPin, Filter, X, Search, 
+import {
+  Download, Calendar, Clock, MapPin, Filter, X, Search,
   Users, UserCheck, UserMinus, UserPlus, TrendingUp,
   BarChart3, PieChart as PieChartIcon, Table as TableIcon, Map as MapIcon,
   ChevronRight, ArrowUpDown, ExternalLink, Image as ImageIcon,
   MoreVertical, FileSpreadsheet, FileText, Info
 } from "lucide-react";
-import { 
+import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell
 } from "recharts";
@@ -23,7 +23,7 @@ const calculateHours = (startTime, endTime) => {
     const start = new Date(`2000-01-01T${startTime}`);
     const end = new Date(`2000-01-01T${endTime}`);
     if (isNaN(start) || isNaN(end)) return 0;
-    
+
     let diff = (end - start) / (1000 * 60 * 60); // hours
     if (diff < 0) diff += 24; // Handle overnight shifts if any
     return parseFloat(diff.toFixed(2));
@@ -52,7 +52,7 @@ const GroupedReport = () => {
   const [activeTab, setActiveTab] = useState("table"); // 'table' or 'map' or 'charts'
   const [selectedDayRecords, setSelectedDayRecords] = useState(null); // For Modal
   const [isTodayActive, setIsTodayActive] = useState(false);
-  
+
   // Filters State
   const [filters, setFilters] = useState({
     startDate: "",
@@ -83,7 +83,7 @@ const GroupedReport = () => {
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('user_name, sales_person_name, admin');
-        
+
         if (userError) throw userError;
         setUsers(userData || []);
 
@@ -189,8 +189,8 @@ const GroupedReport = () => {
   const filteredData = useMemo(() => {
     return processedData.filter(item => {
       const matchesName = !filters.userName || item.name.toLowerCase().includes(filters.userName.toLowerCase());
-      const matchesDateRange = (!filters.startDate || item.date >= filters.startDate) && 
-                               (!filters.endDate || item.date <= filters.endDate);
+      const matchesDateRange = (!filters.startDate || item.date >= filters.startDate) &&
+        (!filters.endDate || item.date <= filters.endDate);
       const matchesMonth = !filters.month || item.date.includes(`-${filters.month.padStart(2, '0')}-`);
       const matchesStatus = filters.status.length === 0 || filters.status.includes(item.status);
       const matchesLocation = !filters.location || item.location?.toLowerCase().includes(filters.location.toLowerCase());
@@ -204,7 +204,7 @@ const GroupedReport = () => {
     const totalUsers = users.length;
     const presentToday = filteredData.filter(d => d.status === 'Present').length;
     const partialToday = filteredData.filter(d => d.status === 'Partial').length;
-    const avgHours = filteredData.length > 0 
+    const avgHours = filteredData.length > 0
       ? (filteredData.reduce((acc, curr) => acc + curr.totalHours, 0) / filteredData.length).toFixed(1)
       : 0;
 
@@ -212,7 +212,7 @@ const GroupedReport = () => {
       totalUsers,
       present: presentToday,
       partial: partialToday,
-      absent: Math.max(0, totalUsers - (presentToday + partialToday )),
+      absent: Math.max(0, totalUsers - (presentToday + partialToday)),
       avgHours
     };
   }, [filteredData, users]);
@@ -249,9 +249,9 @@ const GroupedReport = () => {
       item.mapLink
     ]);
 
-    const csvContent = "data:text/csv;charset=utf-8," + 
+    const csvContent = "data:text/csv;charset=utf-8," +
       [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
-    
+
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -294,7 +294,7 @@ const GroupedReport = () => {
     });
 
     excelContent += `</Table></Worksheet></Workbook>`;
-    
+
     const blob = new Blob([excelContent], { type: "application/vnd.ms-excel" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -321,18 +321,18 @@ const GroupedReport = () => {
 
 
   const clearFilters = () => {
-  setFilters({
-    startDate: "",
-    endDate: "",
-    month: "",
-    year: new Date().getFullYear().toString(),
-    userName: "",
-    status: [],
-    location: ""
-  });
+    setFilters({
+      startDate: "",
+      endDate: "",
+      month: "",
+      year: new Date().getFullYear().toString(),
+      userName: "",
+      status: [],
+      location: ""
+    });
 
-  setIsTodayActive(false); // 🔥 ADD THIS
-};
+    setIsTodayActive(false); // 🔥 ADD THIS
+  };
 
 
   // const setTodayFilter = () => {
@@ -349,19 +349,19 @@ const GroupedReport = () => {
   // };
 
   const setTodayFilter = () => {
-  const today = new Date().toISOString().split('T')[0];
-  setFilters({
-    startDate: today,
-    endDate: today,
-    month: "",
-    year: new Date().getFullYear().toString(),
-    userName: "",
-    status: [],
-    location: ""
-  });
+    const today = new Date().toISOString().split('T')[0];
+    setFilters({
+      startDate: today,
+      endDate: today,
+      month: "",
+      year: new Date().getFullYear().toString(),
+      userName: "",
+      status: [],
+      location: ""
+    });
 
-  setIsTodayActive(true); // 🔥 ADD THIS
-};
+    setIsTodayActive(true); // 🔥 ADD THIS
+  };
 
   if (isLoading) {
     return (
@@ -373,11 +373,11 @@ const GroupedReport = () => {
   }
 
   return (
-  <div className="min-h-screen bg-gray-50 p-4 md:p-8 space-y-6 font-sans">
-      
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8 space-y-6 font-sans">
+
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
         >
@@ -391,21 +391,21 @@ const GroupedReport = () => {
         </motion.div>
 
         <div className="flex items-center gap-2">
-          <button 
+          <button
             onClick={exportToCSV}
             className="flex items-center gap-2 bg-white border border-gray-300 px-3 py-2 rounded-lg text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all"
           >
             <FileSpreadsheet className="w-4 h-4 text-green-600" />
             CSV
           </button>
-          <button 
+          <button
             onClick={exportToExcel}
             className="flex items-center gap-2 bg-white border border-gray-300 px-3 py-2 rounded-lg text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all"
           >
             <FileText className="w-4 h-4 text-blue-600" />
             Excel
           </button>
-          <button 
+          <button
             onClick={handlePrint}
             className="flex items-center gap-2 bg-blue-600 px-4 py-2 rounded-lg text-white text-sm font-medium hover:bg-blue-700 transition-all shadow-sm"
           >
@@ -460,12 +460,12 @@ const GroupedReport = () => {
             <label className="text-xs font-medium text-gray-600">Search User</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input 
+              <input
                 type="text"
                 placeholder="Type name to search..."
                 className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                 value={filters.userName}
-                onChange={(e) => setFilters({...filters, userName: e.target.value})}
+                onChange={(e) => setFilters({ ...filters, userName: e.target.value })}
               />
             </div>
           </div>
@@ -473,31 +473,31 @@ const GroupedReport = () => {
           {/* Date Range */}
           <div className="space-y-1">
             <label className="text-xs font-medium text-gray-600">From Date</label>
-            <input 
+            <input
               type="date"
               className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
               value={filters.startDate}
-              onChange={(e) => setFilters({...filters, startDate: e.target.value})}
+              onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
             />
           </div>
 
           <div className="space-y-1">
             <label className="text-xs font-medium text-gray-600">To Date</label>
-            <input 
+            <input
               type="date"
               className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
               value={filters.endDate}
-              onChange={(e) => setFilters({...filters, endDate: e.target.value})}
+              onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
             />
           </div>
 
           {/* Month Selector */}
           <div className="space-y-1">
             <label className="text-xs font-medium text-gray-600">Month</label>
-            <select 
+            <select
               className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
               value={filters.month}
-              onChange={(e) => setFilters({...filters, month: e.target.value})}
+              onChange={(e) => setFilters({ ...filters, month: e.target.value })}
             >
               <option value="">All Months</option>
               {monthNames.map((m, i) => (
@@ -514,19 +514,19 @@ const GroupedReport = () => {
             >
               Today
             </button> */}
-            <button 
-  onClick={setTodayFilter}
-  disabled={isTodayActive}
-  className={`flex-1 font-medium py-2 px-3 rounded-lg transition-all text-sm flex items-center justify-center gap-2 shadow-sm
-    ${isTodayActive 
-      ? "bg-gray-400 text-white cursor-not-allowed" 
-      : "bg-blue-600 text-white hover:bg-blue-700"
-    }
+            <button
+              onClick={setTodayFilter}
+              disabled={isTodayActive}
+              className={`flex-1 font-medium py-2 px-3 rounded-lg transition-all text-sm flex items-center justify-center gap-2 shadow-sm
+    ${isTodayActive
+                  ? "bg-gray-400 text-white cursor-not-allowed"
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+                }
   `}
->
-  Today
-</button>
-            <button 
+            >
+              Today
+            </button>
+            <button
               onClick={clearFilters}
               className="flex-1 bg-gray-100 text-gray-700 font-medium py-2 px-3 rounded-lg hover:bg-gray-200 transition-all text-sm flex items-center justify-center gap-2"
             >
@@ -543,16 +543,15 @@ const GroupedReport = () => {
             <button
               key={s}
               onClick={() => {
-                const newStatus = filters.status.includes(s) 
+                const newStatus = filters.status.includes(s)
                   ? filters.status.filter(i => i !== s)
                   : [...filters.status, s];
-                setFilters({...filters, status: newStatus});
+                setFilters({ ...filters, status: newStatus });
               }}
-              className={`px-3 py-1 rounded-md text-xs font-medium border transition-all ${
-                filters.status.includes(s)
+              className={`px-3 py-1 rounded-md text-xs font-medium border transition-all ${filters.status.includes(s)
                   ? 'bg-blue-600 border-blue-600 text-white'
                   : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
-              }`}
+                }`}
             >
               {s}
             </button>
@@ -573,11 +572,10 @@ const GroupedReport = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  activeTab === tab.id 
-                    ? 'bg-white text-blue-600 shadow-sm border border-gray-200' 
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id
+                    ? 'bg-white text-blue-600 shadow-sm border border-gray-200'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
+                  }`}
               >
                 <tab.icon className="w-4 h-4" />
                 <span className="hidden sm:inline">{tab.label}</span>
@@ -594,16 +592,16 @@ const GroupedReport = () => {
         <div className="p-4">
           <AnimatePresence mode="wait">
             {activeTab === 'table' && (
-              <motion.div 
+              <motion.div
                 key="table"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 // className="overflow-x-auto"
-                 className="overflow-x-auto max-h-[500px] overflow-y-auto"
+                className="overflow-x-auto max-h-[500px] overflow-y-auto"
               >
                 <table className="w-full text-left">
-                 <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+                  <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                     <tr className="text-gray-500 text-xs font-semibold uppercase tracking-wide">
                       <th className="px-4 py-3">Date</th>
                       <th className="px-4 py-3">User Details</th>
@@ -617,7 +615,7 @@ const GroupedReport = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {filteredData.map((item, idx) => (
-                      <motion.tr 
+                      <motion.tr
                         key={`${item.name}_${item.date}`}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -693,7 +691,7 @@ const GroupedReport = () => {
             )}
 
             {activeTab === 'charts' && (
-              <motion.div 
+              <motion.div
                 key="charts"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -710,8 +708,8 @@ const GroupedReport = () => {
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 500, fill: '#6b7280' }} />
                         <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 500, fill: '#6b7280' }} />
-                        <Tooltip 
-                          contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)', fontSize: '12px' }} 
+                        <Tooltip
+                          contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)', fontSize: '12px' }}
                         />
                         <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                       </BarChart>
@@ -738,8 +736,8 @@ const GroupedReport = () => {
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
-                        <Tooltip 
-                          contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)', fontSize: '12px' }} 
+                        <Tooltip
+                          contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)', fontSize: '12px' }}
                         />
                         <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
                       </PieChart>
@@ -750,7 +748,7 @@ const GroupedReport = () => {
             )}
 
             {activeTab === 'map' && (
-              <motion.div 
+              <motion.div
                 key="map"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -759,7 +757,7 @@ const GroupedReport = () => {
                   <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                   <h3 className="text-lg font-semibold text-gray-700">Team Locations</h3>
                   <p className="text-sm text-gray-500 mt-2 max-w-md mx-auto">
-                    Viewing real-time physical distribution of staff members. 
+                    Viewing real-time physical distribution of staff members.
                     Interactive maps are currently synchronized with the latest entries.
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-8">
@@ -789,7 +787,7 @@ const GroupedReport = () => {
       <AnimatePresence>
         {selectedDayRecords && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -804,7 +802,7 @@ const GroupedReport = () => {
             >
               {/* Modal Header */}
               <div className="bg-blue-600 p-6 text-white">
-                <button 
+                <button
                   onClick={() => setSelectedDayRecords(null)}
                   className="absolute top-4 right-4 p-1 rounded-md bg-white/10 hover:bg-white/20 transition-all"
                 >
@@ -825,26 +823,24 @@ const GroupedReport = () => {
               <div className="p-6 max-h-[70vh] overflow-y-auto">
                 <div className="space-y-6">
                   <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Daily Timeline</h3>
-                  
+
                   <div className="relative border-l-2 border-gray-200 ml-4 space-y-6 pb-6">
                     {selectedDayRecords.records.map((rec, i) => (
                       <div key={rec.id} className="relative pl-6">
-                        <div className={`absolute -left-[9px] top-1 w-3 h-3 rounded-full border-2 border-white shadow-sm ${
-                          rec.status === 'IN' ? 'bg-green-500' : 
-                          rec.status === 'OUT' ? 'bg-red-500' : 'bg-yellow-500'
-                        }`} />
-                        
+                        <div className={`absolute -left-[9px] top-1 w-3 h-3 rounded-full border-2 border-white shadow-sm ${rec.status === 'IN' ? 'bg-green-500' :
+                            rec.status === 'OUT' ? 'bg-red-500' : 'bg-yellow-500'
+                          }`} />
+
                         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                           <div className="flex items-center justify-between mb-3">
-                            <span className={`px-2 py-0.5 rounded text-xs font-medium text-white ${
-                              rec.status === 'IN' ? 'bg-green-600' : 
-                              rec.status === 'OUT' ? 'bg-red-600' : 'bg-yellow-600'
-                            }`}>
+                            <span className={`px-2 py-0.5 rounded text-xs font-medium text-white ${rec.status === 'IN' ? 'bg-green-600' :
+                                rec.status === 'OUT' ? 'bg-red-600' : 'bg-yellow-600'
+                              }`}>
                               {rec.status}
                             </span>
                             <span className="text-sm font-medium text-gray-700">{rec.time}</span>
                           </div>
-                          
+
                           <div className="flex gap-3">
                             {rec.images && (
                               <div className="h-16 w-16 rounded-lg overflow-hidden border border-gray-200 shrink-0">

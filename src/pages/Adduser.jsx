@@ -43,6 +43,10 @@ export default function UserRegistration() {
     in_office: "NO",
   });
 
+  // ========== FILTER STATES ==========
+  const [salesPersonFilter, setSalesPersonFilter] = useState("");
+  const [globalSearch, setGlobalSearch] = useState("");
+
   const [editData, setEditData] = useState(formData);
 
   // ================= FETCH USERS =================
@@ -179,6 +183,26 @@ export default function UserRegistration() {
 
 
  
+  // ================= FILTER LOGIC =================
+  const filteredUsers = users.filter((u) => {
+    // 1. Sales Person Filter
+    const matchSales = salesPersonFilter
+      ? u.sales_person_name?.toLowerCase().includes(salesPersonFilter.toLowerCase())
+      : true;
+      
+    // 2. Global Search
+    const matchGlobal = globalSearch
+      ? Object.values(u).some(
+          (val) =>
+            val !== null &&
+            val !== undefined &&
+            val.toString().toLowerCase().includes(globalSearch.toLowerCase())
+        )
+      : true;
+
+    return matchSales && matchGlobal;
+  });
+
   // ================= UI =================
   return (
     <div className="p-2 md:p-4 lg:p-6 space-y-6 bg-gradient-to-b from-gray-50 to-white min-h-screen">
@@ -324,17 +348,69 @@ export default function UserRegistration() {
       {/* ================= DESKTOP TABLE ================= */}
       <div className="hidden md:block overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
         <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-indigo-50">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-gray-800">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            <h2 className="text-lg font-semibold text-gray-800 whitespace-nowrap">
               User Accounts
             </h2>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-gray-600">Sort by:</span>
-              <select className="border-0 bg-transparent text-purple-700 font-medium focus:outline-none">
-                <option>Date Added</option>
-                <option>Name</option>
-                <option>Role</option>
-              </select>
+            <div className="flex items-center gap-3 text-sm w-full lg:w-auto">
+              
+              {/* Sales Person Datalist Input */}
+              <div className="relative flex-1 lg:w-48">
+                <input
+                  type="text"
+                  list="sales-person-list"
+                  placeholder="Sales Person..."
+                  value={salesPersonFilter}
+                  onChange={(e) => setSalesPersonFilter(e.target.value)}
+                  className="w-full border border-gray-300 rounded bg-white px-3 py-1.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                />
+                <datalist id="sales-person-list">
+                  {[...new Set(users.map(u => u.sales_person_name).filter(Boolean))].map((name, idx) => (
+                    <option key={idx} value={name} />
+                  ))}
+                </datalist>
+              </div>
+
+              {/* Global Search */}
+              <div className="relative flex-1 lg:w-64">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-2.5">
+                  <svg className="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  placeholder="Global Search..."
+                  value={globalSearch}
+                  onChange={(e) => setGlobalSearch(e.target.value)}
+                  className="w-full border border-gray-300 rounded bg-white pl-8 pr-3 py-1.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                />
+              </div>
+
+              {/* Clear Filter Button */}
+              {(salesPersonFilter || globalSearch) && (
+                <button
+                  onClick={() => {
+                    setSalesPersonFilter("");
+                    setGlobalSearch("");
+                  }}
+                  className="text-gray-500 hover:text-red-500 bg-white border border-gray-300 p-1.5 rounded transition-colors flex-shrink-0"
+                  title="Clear Filters"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+
+              <div className="hidden lg:flex items-center gap-2 text-sm ml-2">
+                <span className="text-gray-600">Sort by:</span>
+                <select className="border-0 bg-transparent text-purple-700 font-medium focus:outline-none w-20">
+                  <option>Date Added</option>
+                  <option>Name</option>
+                  <option>Role</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -358,7 +434,7 @@ export default function UserRegistration() {
             </thead>
 
             <tbody>
-              {users.map((u) => (
+              {filteredUsers.map((u) => (
                 <tr
                   key={u.id}
                   className="border-b border-gray-100 hover:bg-purple-50 transition-all duration-150"
@@ -566,24 +642,72 @@ export default function UserRegistration() {
         </div>
 
         <div className="px-6 py-4 border-t border-gray-100 text-sm text-gray-500">
-          Showing {users.length} of {users.length} users
+          Showing {filteredUsers.length} of {users.length} total users
         </div>
       </div>
 
       {/* ================= MOBILE CARD VIEW ================= */}
       <div className="md:hidden space-y-4">
         <div className="bg-white rounded-xl shadow-lg p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">
-              User Accounts
-            </h2>
-            <span className="bg-purple-100 text-purple-800 text-xs font-medium px-3 py-1 rounded-full">
-              {users.length} users
-            </span>
+          <div className="flex flex-col gap-4 mb-4 border-b border-gray-100 pb-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-gray-800">
+                User Accounts
+              </h2>
+              <span className="bg-purple-100 text-purple-800 text-xs font-medium px-3 py-1 rounded-full">
+                {filteredUsers.length} users
+              </span>
+            </div>
+
+            {/* Mobile Filters */}
+            <div className="flex flex-col gap-3">
+              <div className="relative">
+                <input
+                  type="text"
+                  list="sales-person-list-mobile"
+                  placeholder="Filter Sales Person..."
+                  value={salesPersonFilter}
+                  onChange={(e) => setSalesPersonFilter(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                />
+                <datalist id="sales-person-list-mobile">
+                  {[...new Set(users.map(u => u.sales_person_name).filter(Boolean))].map((name, idx) => (
+                    <option key={idx} value={name} />
+                  ))}
+                </datalist>
+              </div>
+
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <svg className="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  placeholder="Global Search..."
+                  value={globalSearch}
+                  onChange={(e) => setGlobalSearch(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                />
+              </div>
+
+              {(salesPersonFilter || globalSearch) && (
+                <button
+                  onClick={() => {
+                    setSalesPersonFilter("");
+                    setGlobalSearch("");
+                  }}
+                  className="text-gray-600 hover:text-red-500 bg-gray-50 border border-gray-200 py-2 rounded-lg transition-colors text-sm font-medium w-full text-center"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="space-y-4">
-            {users.map((u) => (
+            {filteredUsers.map((u) => (
               <div
                 key={u.id}
                 className="border border-gray-200 rounded-xl p-4 hover:border-purple-300 transition-all duration-200"

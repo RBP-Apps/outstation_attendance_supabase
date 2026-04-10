@@ -97,13 +97,39 @@ function Sidebar({ userType, username, tabs = [] }) {
   ];
 
   // If no tabs are specified or tabs array is empty, show all routes
+  // const filteredRoutes =
+  //   !tabs || tabs.length === 0
+  //     ? availableRoutes
+  //     : availableRoutes.filter((route) => {
+  //         const isIncluded = tabs.includes(route.label);
+  //         return isIncluded;
+  //       });
+
   const filteredRoutes =
     !tabs || tabs.length === 0
-      ? availableRoutes
+      ? availableRoutes.filter((route) => {
+        // 👇 User role ke liye hide
+        if (
+          userType === "user" &&
+          (route.label === "User" || route.label === "Report")
+        ) {
+          return false;
+        }
+        return true;
+      })
       : availableRoutes.filter((route) => {
-          const isIncluded = tabs.includes(route.label);
-          return isIncluded;
-        });
+        const isIncluded = tabs.includes(route.label);
+
+        // 👇 yaha bhi same condition
+        if (
+          userType === "user" &&
+          (route.label === "User" || route.label === "Report")
+        ) {
+          return false;
+        }
+
+        return isIncluded;
+      });
 
   const handleLogout = () => {
     logout();
