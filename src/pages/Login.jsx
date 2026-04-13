@@ -11,12 +11,12 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useContext(AuthContext); 
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
 
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -79,63 +79,45 @@ function Login() {
                 />
               </div>
 
-              {/* <div className="mb-6">
+
+              <div className="mb-6">
                 <label
                   htmlFor="password"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
                   Password
                 </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="Enter your password"
-                  disabled={isLoading}
-                />
-              </div> */}
 
-              <div className="mb-6">
-  <label
-    htmlFor="password"
-    className="block text-sm font-medium text-gray-700 mb-1"
-  >
-    Password
-  </label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="Enter your password"
+                    disabled={isLoading}
+                  />
 
-  <div className="relative">
-    <input
-      id="password"
-      type={showPassword ? "text" : "password"}
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
-      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-      placeholder="Enter your password"
-      disabled={isLoading}
-    />
-
-    {/* 👁 Eye Icon */}
-    <button
-      type="button"
-      onClick={() => setShowPassword(!showPassword)}
-      className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700"
-    >
-      {showPassword ? (
-        <EyeOff className="w-5 h-5" />
-      ) : (
-        <Eye className="w-5 h-5" />
-      )}
-    </button>
-  </div>
-</div>
+                  {/* 👁 Eye Icon */}
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
 
               <button
                 type="submit"
-                className={`w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-2 px-4 rounded-md transition-colors ${
-                  isLoading ? "opacity-70 cursor-not-allowed" : ""
-                }`}
+                className={`w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-2 px-4 rounded-md transition-colors ${isLoading ? "opacity-70 cursor-not-allowed" : ""
+                  }`}
                 disabled={isLoading}
               >
                 {isLoading ? "Signing In..." : "Sign In"}

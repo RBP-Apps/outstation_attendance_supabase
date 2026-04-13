@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState , useRef  } from "react";
 import supabase from "../utils/supabase";
 
 export default function UserRegistration() {
@@ -18,6 +18,45 @@ export default function UserRegistration() {
 
   const [pageAccess, setPageAccess] = useState([]);
   const [openPageBox, setOpenPageBox] = useState(false);
+  const dropdownRef = useRef(null);
+
+
+
+  useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target)
+    ) {
+      setOpenPageBox(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
+
+
+const handleCloseModal = () => {
+  setOpen(false);
+
+  // form reset
+  setFormData({
+    sales_person_name: "",
+    user_name: "",
+    password: "",
+    admin: "USER",
+    access: "",
+    in_office: "NO",
+  });
+
+  // dropdown reset
+  setPageAccess([]);
+  setOpenPageBox(false);
+};
 
   const togglePage = (page) => {
     setPageAccess((prev) =>
@@ -904,13 +943,13 @@ export default function UserRegistration() {
       {/* ================= ADD USER MODAL ================= */}
       {open && (
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-white">Add New User</h2>
                 <button
                   type="button"
-                  onClick={() => setOpen(false)}
+                  onClick={handleCloseModal}
                   className="text-white hover:text-gray-200"
                 >
                   <svg
@@ -1007,7 +1046,7 @@ export default function UserRegistration() {
                 </div>
               </div>
 
-              <div className="relative">
+              <div className="relative" ref={dropdownRef}>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Page Access (Departments)
                 </label>
@@ -1027,7 +1066,7 @@ export default function UserRegistration() {
 
                 {/* Dropdown */}
                 {openPageBox && (
-                  <div className="absolute z-20 mt-1 w-full max-h-64 overflow-y-auto border bg-white rounded-lg shadow-lg p-3 space-y-2">
+ <div className="absolute z-50 bottom-full mb-1 w-full max-h-64 overflow-y-auto border bg-white rounded-lg shadow-lg p-3 space-y-2">
                     {loading ? (
                       <div className="text-center py-4">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
@@ -1072,7 +1111,7 @@ export default function UserRegistration() {
               <div className="flex gap-3 justify-end pt-4 border-t border-gray-100">
                 <button
                   type="button"
-                  onClick={() => setOpen(false)}
+                  onClick={handleCloseModal}
                   className="px-5 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
                 >
                   Cancel
