@@ -1,12 +1,16 @@
 "use client";
 import { useEffect, useState , useRef  } from "react";
 import supabase from "../utils/supabase";
+import { Eye, EyeOff } from "lucide-react";
+
 
 export default function UserRegistration() {
   const [users, setUsers] = useState([]);
   const [open, setOpen] = useState(false);
   const [editUserId, setEditUserId] = useState(null);
   const [masterData, setMasterData] = useState([]);
+  const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
   const [masterForm, setMasterForm] = useState({
     department: "",
     given_by: "",
@@ -19,6 +23,9 @@ export default function UserRegistration() {
   const [pageAccess, setPageAccess] = useState([]);
   const [openPageBox, setOpenPageBox] = useState(false);
   const dropdownRef = useRef(null);
+
+
+  const [showPassword, setShowPassword] = useState(false);
 
 
 
@@ -148,39 +155,93 @@ const handleCloseModal = () => {
   };
 
   // ========== HANDLE SUBMIT UPDATE ==========
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   const payload = {
+  //     sales_person_name: formData.sales_person_name,
+  //     user_name: formData.user_name,
+  //     password: formData.password,
+  //     admin: formData.admin,
+  //     access: pageAccess.length === pageOptions.length ? "ALL" : pageAccess.join(","),
+  //     in_office: formData.in_office,
+  //   };
+
+  //   try {
+  //     const { error } = await supabase.from("users").insert([payload]);
+
+  //     if (error) throw error;
+
+  //     setOpen(false);
+  //     setFormData({
+  //       sales_person_name: "",
+  //       user_name: "",
+  //       password: "",
+  //       admin: "USER",
+  //       access: "",
+  //       in_office: "NO",
+  //     });
+
+  //     setPageAccess([]);
+  //     fetchUsers();
+  //   } catch (error) {
+  //     console.error("Error adding user:", error);
+  //   }
+  // };
+
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  setErrorMsg("");
 
-    const payload = {
-      sales_person_name: formData.sales_person_name,
-      user_name: formData.user_name,
-      password: formData.password,
-      admin: formData.admin,
-      access: pageAccess.length === pageOptions.length ? "ALL" : pageAccess.join(","),
-      in_office: formData.in_office,
-    };
-
-    try {
-      const { error } = await supabase.from("users").insert([payload]);
-
-      if (error) throw error;
-
-      setOpen(false);
-      setFormData({
-        sales_person_name: "",
-        user_name: "",
-        password: "",
-        admin: "USER",
-        access: "",
-        in_office: "NO",
-      });
-
-      setPageAccess([]);
-      fetchUsers();
-    } catch (error) {
-      console.error("Error adding user:", error);
-    }
+  const payload = {
+    sales_person_name: formData.sales_person_name,
+    user_name: formData.user_name,
+    password: formData.password,
+    admin: formData.admin,
+    access:
+      pageAccess.length === pageOptions.length
+        ? "ALL"
+        : pageAccess.join(","),
+    in_office: formData.in_office,
   };
+
+ try {
+  const { error } = await supabase.from("users").insert([payload]);
+
+  if (error) {
+    if (error.message.includes("duplicate") || error.code === "23505") {
+      setErrorMsg("Username already exists ❌");
+    } else {
+      setErrorMsg("Something went wrong ❌");
+    }
+    return;
+  }
+
+  // ✅ SUCCESS MESSAGE
+  setSuccessMsg("User created successfully ✅");
+
+  setOpen(false);
+  setFormData({
+    sales_person_name: "",
+    user_name: "",
+    password: "",
+    admin: "USER",
+    access: "",
+    in_office: "NO",
+  });
+
+  setPageAccess([]);
+  fetchUsers();
+
+  // 🔥 auto hide after 3 sec
+  setTimeout(() => setSuccessMsg(""), 3000);
+
+} catch (error) {
+  setErrorMsg("Server error ❌");
+}
+};
+
 
   const handleUpdate = async (id) => {
     const payload = {};
@@ -973,6 +1034,17 @@ const handleCloseModal = () => {
               </p>
             </div>
 
+  {errorMsg && (
+  <div className="bg-red-100 text-red-700 p-2 rounded text-sm">
+    {errorMsg}
+  </div>
+)}
+
+{successMsg && (
+  <div className="bg-green-100 text-green-700 p-2 rounded text-sm">
+    {successMsg}
+  </div>
+)}
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1000,19 +1072,28 @@ const handleCloseModal = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
-                <input
-                  className="border border-gray-300 rounded-lg px-4 py-3 w-full focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                  name="password"
-                  type="password"
-                  placeholder="Enter password"
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+               <div className="relative">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Password
+      </label>
+
+      <input
+        className="border border-gray-300 rounded-lg px-4 py-3 w-full pr-10 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+        name="password"
+        type={showPassword ? "text" : "password"}
+        placeholder="Enter password"
+        onChange={handleChange}
+        required
+      />
+
+      {/* Eye Icon */}
+      <span
+        onClick={() => setShowPassword(!showPassword)}
+        className="absolute right-3 top-10 cursor-pointer text-gray-500"
+      >
+        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+      </span>
+    </div>        
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
