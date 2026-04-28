@@ -7,8 +7,6 @@ import AttendanceSummaryCard from "../components/attendance/AttendanceSummaryCar
 import AttendanceHistory from "../components/attendance/AttendanceHistory";
 import AttendanceForm from "../components/attendance/AttendanceForm";
 import LocationPermissionBanner from "../components/attendance/LocationPermissionBanner";
-import { getUniqueNames, getAvailableMonths } from "../utils/attendanceUtils";
-import { monthNames, getCurrentMonthYear } from "../utils/dateUtils";
 
 const Attendance = () => {
   const { currentUser, isAuthenticated } = useContext(AuthContext);
@@ -17,6 +15,7 @@ const Attendance = () => {
 
   const {
     historyAttendance,
+    summaryAttendance,
     isLoadingHistory,
     hasCheckedInToday,
     attendance,
@@ -24,6 +23,12 @@ const Attendance = () => {
     filters,
     setFilters,
     filteredHistoryCallbackData,
+    currentPage,
+    setCurrentPage,
+    totalCount,
+    pageSize,
+    uniqueNames,
+    availableMonths,
   } = useAttendanceData(currentUser, isAuthenticated, userRole, salesPersonName);
 
   const { locationPermissionStatus, checkLocationPermission } = useLocation();
@@ -73,7 +78,7 @@ const Attendance = () => {
         />
 
         <AttendanceSummaryCard
-          attendanceData={historyAttendance}
+          attendanceData={summaryAttendance}
           isLoading={isLoadingHistory}
           userRole={userRole}
           salesPersonName={salesPersonName}
@@ -98,9 +103,12 @@ const Attendance = () => {
           filters={filters}
           setFilters={setFilters}
           filteredData={filteredHistoryCallbackData}
-          getUniqueNames={getUniqueNames}
-          getAvailableMonths={(data) => getAvailableMonths(data, monthNames)}
-          monthNames={monthNames}
+          uniqueNames={uniqueNames}
+          availableMonths={availableMonths}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          totalCount={totalCount}
+          pageSize={pageSize}
         />
       </div>
     </div>

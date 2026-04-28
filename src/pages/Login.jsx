@@ -46,13 +46,11 @@ function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100 p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-10">
-          <p className="text-slate-600">Sign in to access your dashboard</p>
-        </div>
-
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="p-6">
-            <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+          <img src="/Logo.PNG" alt="" className="w-32 h-16 ml-32" />
+
+            <h2 className="text-2xl font-bold mb-6 text-center">Outstation-Attendance</h2>
 
             {error && (
               <div className="mb-4 p-3 bg-red-100 border border-red-200 text-red-700 rounded-md">

@@ -335,19 +335,6 @@ const GroupedReport = () => {
   };
 
 
-  // const setTodayFilter = () => {
-  //   const today = new Date().toISOString().split('T')[0];
-  //   setFilters({
-  //     startDate: today,
-  //     endDate: today,
-  //     month: "",
-  //     year: new Date().getFullYear().toString(),
-  //     userName: "",
-  //     status: [],
-  //     location: ""
-  //   });
-  // };
-
   const setTodayFilter = () => {
     const today = new Date().toISOString().split('T')[0];
     setFilters({
@@ -419,7 +406,7 @@ const GroupedReport = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {[
           { label: "Total Users", value: stats.totalUsers, icon: Users, color: "blue", trend: "+2%" },
-          { label: "Present Today", value: stats.present, icon: UserCheck, color: "emerald", trend: "Normal" },
+          { label: "Total Present", value: stats.present, icon: UserCheck, color: "emerald", trend: "Normal" },
           { label: "Partial/MID", value: stats.partial, icon: TrendingUp, color: "amber", trend: "High" },
           { label: "Absent", value: stats.absent, icon: UserMinus, color: "rose", trend: "-5%" },
           { label: "Avg Hours", value: `${stats.avgHours}h`, icon: Clock, color: "indigo", trend: "Target: 8h" }
@@ -508,12 +495,6 @@ const GroupedReport = () => {
 
           {/* Filter Actions */}
           <div className="flex items-end gap-2 lg:col-span-1">
-            {/* <button 
-              onClick={setTodayFilter}
-              className="flex-1 bg-blue-600 text-white font-medium py-2 px-3 rounded-lg hover:bg-blue-700 transition-all text-sm flex items-center justify-center gap-2 shadow-sm"
-            >
-              Today
-            </button> */}
             <button
               onClick={setTodayFilter}
               disabled={isTodayActive}

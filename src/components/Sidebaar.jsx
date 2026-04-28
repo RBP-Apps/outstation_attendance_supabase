@@ -96,15 +96,6 @@ function Sidebar({ userType, username, tabs = [] }) {
     },
   ];
 
-  // If no tabs are specified or tabs array is empty, show all routes
-  // const filteredRoutes =
-  //   !tabs || tabs.length === 0
-  //     ? availableRoutes
-  //     : availableRoutes.filter((route) => {
-  //         const isIncluded = tabs.includes(route.label);
-  //         return isIncluded;
-  //       });
-
   const filteredRoutes =
     !tabs || tabs.length === 0
       ? availableRoutes.filter((route) => {
@@ -159,7 +150,7 @@ function Sidebar({ userType, username, tabs = [] }) {
         <div className="flex items-center justify-between h-16 px-4 border-b border-slate-200/50 flex-shrink-0">
           <div className="flex items-center justify-center lg:justify-start w-full">
             <img
-              src="RBP.jpeg"
+              src="Logo.PNG"
               alt="RBP Logo"
               className="h-12 w-auto object-contain transition-transform duration-200 hover:scale-105 drop-shadow-md"
             />

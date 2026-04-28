@@ -1,4 +1,4 @@
-import { Download, Calendar, Clock, MapPin, Upload, Filter, X } from "lucide-react";
+import { Download, Calendar, Clock, MapPin, Upload, Filter, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { formatDisplayDateTime } from "../../utils/dateUtils";
 import { useState } from "react";
 
@@ -9,9 +9,12 @@ const AttendanceHistory = ({
   filters,
   setFilters,
   filteredData,
-  getUniqueNames,
-  getAvailableMonths,
-  monthNames,
+  uniqueNames,
+  availableMonths,
+  currentPage,
+  setCurrentPage,
+  totalCount,
+  pageSize,
 }) => {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
@@ -20,18 +23,14 @@ const AttendanceHistory = ({
     return formatDisplayDateTime(dateTimeStr);
   };
 
-  // Enhanced Excel download function
+  // Enhanced Excel download function — downloads current page data
   const downloadExcel = () => {
-    // Use filteredData passed from parent
     if (!filteredData || filteredData.length === 0) {
       alert("No data available to download");
       return;
     }
 
-    // Create proper Excel content with XML format
-    const currentDate = new Date().toLocaleDateString();
-    const fileName = `Attendance_History_${new Date().toISOString().split("T")[0]
-      }`;
+    const fileName = `Attendance_History_${new Date().toISOString().split("T")[0]}`;
 
     // Create Excel XML structure
     let excelContent = `<?xml version="1.0"?>
@@ -54,30 +53,23 @@ const AttendanceHistory = ({
     filteredData.forEach((row) => {
       excelContent += `
         <Row>
-          <Cell><Data ss:Type="String">${row.salesPersonName || "N/A"
-        }</Data></Cell>
+          <Cell><Data ss:Type="String">${row.salesPersonName || "N/A"}</Data></Cell>
           <Cell><Data ss:Type="String">${row.dateTime || "N/A"}</Data></Cell>
           <Cell><Data ss:Type="String">${row.status || "N/A"}</Data></Cell>
           <Cell><Data ss:Type="String">${row.mapLink || "N/A"}</Data></Cell>
           <Cell><Data ss:Type="String">${(row.address || "N/A").replace(
-          /[<>&"']/g,
-          function (match) {
-            switch (match) {
-              case "<":
-                return "&lt;";
-              case ">":
-                return "&gt;";
-              case "&":
-                return "&amp;";
-              case '"':
-                return "&quot;";
-              case "'":
-                return "&apos;";
-              default:
-                return match;
-            }
+        /[<>&"']/g,
+        function (match) {
+          switch (match) {
+            case "<": return "&lt;";
+            case ">": return "&gt;";
+            case "&": return "&amp;";
+            case '"': return "&quot;";
+            case "'": return "&apos;";
+            default: return match;
           }
-        )}</Data></Cell>
+        }
+      )}</Data></Cell>
         </Row>`;
     });
 
@@ -86,7 +78,6 @@ const AttendanceHistory = ({
         </Worksheet>
       </Workbook>`;
 
-    // Create and download the file
     const blob = new Blob([excelContent], {
       type: "application/vnd.ms-excel;charset=utf-8;",
     });
@@ -120,10 +111,22 @@ const AttendanceHistory = ({
 
   const hasActiveFilters = filters.name || filters.status || filters.month;
 
+  // Pagination helpers
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const startRecord = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const endRecord = Math.min(currentPage * pageSize, totalCount);
+
+  const goToPrevPage = () => {
+    if (currentPage > 1) setCurrentPage((p) => p - 1);
+  };
+  const goToNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage((p) => p + 1);
+  };
+
   // Mobile Card Component
   const MobileCard = ({ record }) => {
     const { date, time } = formatDisplayDateTimeHelper(record.dateTime) || { date: "N/A", time: "N/A" };
-    
+
     return (
       <div className="mb-4 overflow-hidden bg-white border rounded-xl shadow-sm border-slate-200 hover:shadow-md transition-shadow">
         <div className="p-4">
@@ -136,7 +139,7 @@ const AttendanceHistory = ({
               className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${
                 record.status === "IN"
                   ? "bg-green-100 text-green-800"
-                  : record.status === 'MID'
+                  : record.status === "MID"
                     ? "bg-blue-100 text-blue-800"
                     : record.status === "OUT"
                       ? "bg-red-100 text-red-800"
@@ -183,7 +186,7 @@ const AttendanceHistory = ({
             ) : (
               <span className="text-sm text-slate-400">No map link</span>
             )}
-            
+
             {record.imageUrl ? (
               <a
                 href={record.imageUrl}
@@ -194,6 +197,8 @@ const AttendanceHistory = ({
                 <img
                   src={record.imageUrl}
                   alt="Attendance"
+                  loading="lazy"
+                  decoding="async"
                   className="object-cover w-10 h-10 rounded-lg border border-slate-200 shadow-sm"
                   onError={(e) => {
                     e.target.onerror = null;
@@ -273,7 +278,7 @@ const AttendanceHistory = ({
                   className="w-full px-3 py-2 text-sm border rounded-lg bg-white/90 border-white/30 text-slate-700 focus:ring-2 focus:ring-white/50 focus:border-white/50"
                 />
                 <datalist id="desktop-name-list">
-                  {getUniqueNames(attendanceData || []).map((name) => (
+                  {uniqueNames.map((name) => (
                     <option key={name} value={name} />
                   ))}
                 </datalist>
@@ -295,6 +300,7 @@ const AttendanceHistory = ({
                 <datalist id="desktop-status-list">
                   <option value="IN" />
                   <option value="OUT" />
+                  <option value="MID" />
                   <option value="Leave" />
                 </datalist>
               </div>
@@ -313,7 +319,7 @@ const AttendanceHistory = ({
                   className="w-full px-3 py-2 text-sm border rounded-lg bg-white/90 border-white/30 text-slate-700 focus:ring-2 focus:ring-white/50 focus:border-white/50"
                 />
                 <datalist id="desktop-month-list">
-                  {getAvailableMonths(attendanceData || []).map((monthYear) => (
+                  {availableMonths.map((monthYear) => (
                     <option key={monthYear} value={monthYear} />
                   ))}
                 </datalist>
@@ -376,7 +382,7 @@ const AttendanceHistory = ({
                       className="w-full px-3 py-2 text-sm border rounded-lg bg-white/90 border-white/30 text-slate-700 focus:ring-2 focus:ring-white/50 focus:border-white/50"
                     />
                     <datalist id="mobile-name-list">
-                      {getUniqueNames(attendanceData || []).map((name) => (
+                      {uniqueNames.map((name) => (
                         <option key={name} value={name} />
                       ))}
                     </datalist>
@@ -397,6 +403,7 @@ const AttendanceHistory = ({
                     <datalist id="mobile-status-list">
                       <option value="IN" />
                       <option value="OUT" />
+                      <option value="MID" />
                       <option value="Leave" />
                     </datalist>
                   </div>
@@ -414,7 +421,7 @@ const AttendanceHistory = ({
                       className="w-full px-3 py-2 text-sm border rounded-lg bg-white/90 border-white/30 text-slate-700 focus:ring-2 focus:ring-white/50 focus:border-white/50"
                     />
                     <datalist id="mobile-month-list">
-                      {getAvailableMonths(attendanceData || []).map((monthYear) => (
+                      {availableMonths.map((monthYear) => (
                         <option key={monthYear} value={monthYear} />
                       ))}
                     </datalist>
@@ -439,8 +446,7 @@ const AttendanceHistory = ({
         {hasActiveFilters && (
           <div className="p-3 mt-3 border rounded-lg bg-white/10 border-white/20">
             <p className="text-sm text-blue-100">
-              Showing {filteredData.length} of {attendanceData?.length || 0}{" "}
-              records
+              Showing {startRecord}–{endRecord} of {totalCount} records
               {filters.name && ` • Name: ${filters.name}`}
               {filters.status && ` • Status: ${filters.status}`}
               {filters.month && ` • Month: ${filters.month}`}
@@ -536,7 +542,7 @@ const AttendanceHistory = ({
                         <span
                           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${record.status === "IN"
                               ? "bg-green-100 text-green-800"
-                              : record.status === 'MID'
+                              : record.status === "MID"
                                 ? "bg-blue-100 text-blue-800"
                                 : record.status === "OUT"
                                   ? "bg-red-100 text-red-800"
@@ -582,6 +588,8 @@ const AttendanceHistory = ({
                             <img
                               src={record.imageUrl}
                               alt="Attendance"
+                              loading="lazy"
+                              decoding="async"
                               className="object-cover w-12 h-12 rounded-lg shadow-sm border border-slate-200"
                               onError={(e) => {
                                 e.target.onerror = null;
@@ -609,6 +617,45 @@ const AttendanceHistory = ({
           </>
         )}
       </div>
+
+      {/* ── Pagination Controls ── */}
+      {totalCount > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50/50 gap-3">
+          <p className="text-sm text-slate-600">
+            Showing{" "}
+            <span className="font-semibold text-slate-800">{startRecord}</span>
+            {" – "}
+            <span className="font-semibold text-slate-800">{endRecord}</span>
+            {" of "}
+            <span className="font-semibold text-slate-800">{totalCount}</span>{" "}
+            records
+          </p>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={goToPrevPage}
+              disabled={currentPage <= 1}
+              className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Previous
+            </button>
+
+            <span className="px-3 py-1.5 text-sm font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg">
+              {currentPage} / {totalPages || 1}
+            </span>
+
+            <button
+              onClick={goToNextPage}
+              disabled={currentPage >= totalPages}
+              className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              Next
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

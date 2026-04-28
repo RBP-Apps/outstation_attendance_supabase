@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Calendar, CheckCircle, XCircle, Clock, AlertTriangle, Filter, ChevronDown } from "lucide-react";
 import { determineMispunchStatus, isDayComplete } from "../../utils/attendanceUtils";
 import { monthNames } from "../../utils/dateUtils";
@@ -11,16 +11,8 @@ const AttendanceSummaryCard = ({
   selectedMonth,
   onFilterChange, // Callback to parent for filter changes
 }) => {
-  const [summaryData, setSummaryData] = useState({
-    totalPresent: 0,
-    totalLeave: 0,
-    totalIn: 0,
-    totalMid: 0,
-    totalOut: 0,
-    totalMispunch: 0,
-    mispunchDetails: [],
-  });
   
+
   // Filter states
   const [filterType, setFilterType] = useState("monthly"); // "daily", "weekly", "monthly", "yearly", "custom"
   const [selectedDateRange, setSelectedDateRange] = useState({
@@ -216,41 +208,38 @@ const AttendanceSummaryCard = ({
     });
   };
   
-  useEffect(() => {
-    if (!attendanceData || attendanceData.length === 0) {
-      setSummaryData({
-        totalPresent: 0,
-        totalLeave: 0,
-        totalIn: 0,
-        totalMid:0, 
-        totalOut: 0,
-        totalMispunch: 0,
-        mispunchDetails: [],
-      });
-      return;
-    }
-    
+  // ─── useMemo (same pattern as Report.jsx) — no extra re-render, no main-thread block ───
+  const summaryData = useMemo(() => {
+    const defaultData = {
+      totalPresent: 0,
+      totalLeave: 0,
+      totalIn: 0,
+      totalMid: 0,
+      totalOut: 0,
+      totalMispunch: 0,
+      mispunchDetails: [],
+    };
+
+    if (!attendanceData || attendanceData.length === 0) return defaultData;
+
     // Apply date range filter first
     const filteredByDate = filterDataByDateRange(attendanceData);
-    
-    // Filter data for current user (admin sees all, users see only their data)
+
+    // Role-based filter
     const userSpecificData =
       userRole?.toLowerCase() === "admin"
         ? filteredByDate
-        : filteredByDate.filter(
-          (entry) => entry.salesPersonName === salesPersonName
-        );
-    
+        : filteredByDate.filter((entry) => entry.salesPersonName === salesPersonName);
+
     // Get target month/year based on filter type
     let targetMonth, targetYear;
-    
     if (filterType === "monthly" && selectedMonthYear) {
       const [mName, yStr] = selectedMonthYear.split(" ");
       targetMonth = monthNames.indexOf(mName);
       targetYear = parseInt(yStr);
     } else if (filterType === "yearly" && selectedYear) {
       targetYear = parseInt(selectedYear);
-      targetMonth = null; // Don't filter by month for yearly view
+      targetMonth = null;
     } else if (filterType === "weekly" && selectedMonthYear) {
       const [mName, yStr] = selectedMonthYear.split(" ");
       targetMonth = monthNames.indexOf(mName);
@@ -263,25 +252,19 @@ const AttendanceSummaryCard = ({
       targetMonth = now.getMonth();
       targetYear = now.getFullYear();
     }
-    
-    // Group by employee and date to calculate daily statistics
+
+    // Group by employee + date
     const employeeDailyRecords = {};
-    
+
     userSpecificData.forEach((entry) => {
-      // Robust status matching
       const statusNormalized = entry.status?.trim().toUpperCase();
-      
       if (!entry.dateTime) return;
-      
+
       const [year, month, day] = entry.date ? entry.date.split("-") : [null, null, null];
       let entryDate;
-      
+
       if (year && month && day) {
-        entryDate = new Date(
-          parseInt(year),
-          parseInt(month) - 1,
-          parseInt(day)
-        );
+        entryDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       } else if (entry.dateTime) {
         entryDate = new Date(entry.dateTime);
         if (isNaN(entryDate.getTime())) {
@@ -290,109 +273,77 @@ const AttendanceSummaryCard = ({
           entryDate = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
         }
       }
-      
+
       if (!entryDate || isNaN(entryDate.getTime())) return;
-      
-      // Apply month/year filtering based on filter type
+
       let shouldInclude = true;
       if (filterType === "monthly" && targetMonth !== undefined && targetYear !== undefined) {
         shouldInclude = entryDate.getMonth() === targetMonth && entryDate.getFullYear() === targetYear;
       } else if (filterType === "yearly" && targetYear !== undefined) {
         shouldInclude = entryDate.getFullYear() === targetYear;
-      } else if (filterType === "weekly" && selectedMonthYear) {
-        // For weekly, we already filtered by date range above
-        shouldInclude = true;
-      } else if (filterType === "custom") {
-        // Already filtered by custom date range
+      } else if (filterType === "weekly" || filterType === "custom") {
         shouldInclude = true;
       }
-      
+
       if (!shouldInclude) return;
-      
+
       const dateStr = entry.date || (entry.dateTime ? entry.dateTime.split(" ")[0] : "unknown");
       const employeeName = entry.salesPersonName || "Unknown";
       const dateKey = `${employeeName}_${dateStr}`;
-      
-   if (!employeeDailyRecords[dateKey]) {
-  employeeDailyRecords[dateKey] = {
-    employee: employeeName,
-    date: dateStr,
-    inCount: 0,
-    midCount: 0,   // ✅ ADD
-    outCount: 0,
-    leaveCount: 0,
-    hasLeave: false,
-    punches: [],
-  };
-}
+
+      if (!employeeDailyRecords[dateKey]) {
+        employeeDailyRecords[dateKey] = {
+          employee: employeeName,
+          date: dateStr,
+          inCount: 0,
+          midCount: 0,
+          outCount: 0,
+          leaveCount: 0,
+          hasLeave: false,
+          punches: [],
+        };
+      }
 
       if (statusNormalized === "IN") {
         employeeDailyRecords[dateKey].inCount++;
-        employeeDailyRecords[dateKey].punches.push({
-          type: "IN",
-          time: entry.dateTime,
-          status: entry.status,
-        });
-      } 
-      else if (statusNormalized === "MID") {
-  employeeDailyRecords[dateKey].midCount++;   // ✅ ADD
-  employeeDailyRecords[dateKey].punches.push({
-    type: "MID",
-    time: entry.dateTime,
-    status: entry.status,
-  });
-}
-      else if (statusNormalized === "OUT") {
+        employeeDailyRecords[dateKey].punches.push({ type: "IN", time: entry.dateTime, status: entry.status });
+      } else if (statusNormalized === "MID") {
+        employeeDailyRecords[dateKey].midCount++;
+        employeeDailyRecords[dateKey].punches.push({ type: "MID", time: entry.dateTime, status: entry.status });
+      } else if (statusNormalized === "OUT") {
         employeeDailyRecords[dateKey].outCount++;
-        employeeDailyRecords[dateKey].punches.push({
-          type: "OUT",
-          time: entry.dateTime,
-          status: entry.status,
-        });
-      } else if (
-        statusNormalized === "LEAVE" ||
-        statusNormalized === "LEAVES"
-      ) {
+        employeeDailyRecords[dateKey].punches.push({ type: "OUT", time: entry.dateTime, status: entry.status });
+      } else if (statusNormalized === "LEAVE" || statusNormalized === "LEAVES") {
         employeeDailyRecords[dateKey].leaveCount++;
         employeeDailyRecords[dateKey].hasLeave = true;
-        employeeDailyRecords[dateKey].punches.push({
-          type: "LEAVE",
-          time: entry.dateTime,
-          status: entry.status,
-        });
+        employeeDailyRecords[dateKey].punches.push({ type: "LEAVE", time: entry.dateTime, status: entry.status });
       }
     });
-    
-    // Calculate totals and mispunch details
+
+    // Calculate totals
     let totalPresent = 0;
     let totalLeave = 0;
     let totalIn = 0;
     let totalOut = 0;
     let totalMispunch = 0;
     const mispunchDetails = [];
-    
+
     Object.values(employeeDailyRecords).forEach((dayRecord) => {
       totalIn += dayRecord.inCount;
       totalOut += dayRecord.outCount;
       totalLeave += dayRecord.leaveCount;
-      
-      if (dayRecord.hasLeave) {
-        // Don't count leave days as present or absent
-      } else if (
-  dayRecord.inCount > 0 &&
-  dayRecord.midCount > 0 &&
-  dayRecord.outCount > 0
-) {
-  totalPresent++;
-}
-      
+
+      if (!dayRecord.hasLeave && dayRecord.inCount > 0 && dayRecord.midCount > 0 && dayRecord.outCount > 0) {
+        totalPresent++;
+      }
+
       const mispunchStatus = determineMispunchStatus(
         dayRecord.inCount,
         dayRecord.outCount,
         dayRecord.date,
         dayRecord.hasLeave
       );
-      
+
       if (mispunchStatus.isMispunch) {
         totalMispunch++;
         mispunchDetails.push({
@@ -407,8 +358,8 @@ const AttendanceSummaryCard = ({
         });
       }
     });
-    
-    setSummaryData({
+
+    return {
       totalPresent,
       totalLeave: Math.max(
         totalLeave,
@@ -418,17 +369,23 @@ const AttendanceSummaryCard = ({
       totalOut,
       totalMispunch,
       mispunchDetails,
-    });
-    
-    // Notify parent about filter changes
+    };
+  }, [attendanceData, salesPersonName, userRole, filterType, selectedMonthYear, selectedYear, selectedDateRange]);
+
+  // Tiny side-effect: notify parent on filter changes (separate from computation)
+  useEffect(() => {
     if (onFilterChange) {
       onFilterChange({
         type: filterType,
-        value: filterType === "yearly" ? selectedYear : 
-               filterType === "custom" ? selectedDateRange : selectedMonthYear
+        value:
+          filterType === "yearly"
+            ? selectedYear
+            : filterType === "custom"
+            ? selectedDateRange
+            : selectedMonthYear,
       });
     }
-  }, [attendanceData, salesPersonName, userRole, filterType, selectedMonthYear, selectedYear, selectedDateRange]);
+  }, [filterType, selectedYear, selectedDateRange, selectedMonthYear, onFilterChange]);
   
   // Handler for filter type change
   const handleFilterTypeChange = (type) => {

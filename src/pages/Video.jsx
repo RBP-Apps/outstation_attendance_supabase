@@ -36,7 +36,8 @@ const Video = () => {
                     <iframe
                       width="100%"
                       height="100%"
-                      src="https://www.youtube.com/embed/aHJ6uyF2Pzo"
+                      // src="https://www.youtube.com/embed/aHJ6uyF2Pzo"
+                      src="https://www.youtube.com/embed/0iiyUTTvudw"
                       title="Admin Help Video"
                       frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

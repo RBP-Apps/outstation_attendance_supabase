@@ -1,8 +1,7 @@
 "use client";
-import { useEffect, useState , useRef  } from "react";
+import { useEffect, useState, useRef } from "react";
 import supabase from "../utils/supabase";
 import { Eye, EyeOff } from "lucide-react";
-
 
 export default function UserRegistration() {
   const [users, setUsers] = useState([]);
@@ -24,46 +23,39 @@ export default function UserRegistration() {
   const [openPageBox, setOpenPageBox] = useState(false);
   const dropdownRef = useRef(null);
 
-
   const [showPassword, setShowPassword] = useState(false);
 
-
-
   useEffect(() => {
-  const handleClickOutside = (event) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.target)
-    ) {
-      setOpenPageBox(false);
-    }
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenPageBox(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleCloseModal = () => {
+    setOpen(false);
+
+    // form reset
+    setFormData({
+      sales_person_name: "",
+      user_name: "",
+      password: "",
+      admin: "USER",
+      access: "",
+      in_office: "NO",
+    });
+
+    // dropdown reset
+    setPageAccess([]);
+    setOpenPageBox(false);
   };
-
-  document.addEventListener("mousedown", handleClickOutside);
-
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, []);
-
-
-const handleCloseModal = () => {
-  setOpen(false);
-
-  // form reset
-  setFormData({
-    sales_person_name: "",
-    user_name: "",
-    password: "",
-    admin: "USER",
-    access: "",
-    in_office: "NO",
-  });
-
-  // dropdown reset
-  setPageAccess([]);
-  setOpenPageBox(false);
-};
 
   const togglePage = (page) => {
     setPageAccess((prev) =>
@@ -138,7 +130,7 @@ const handleCloseModal = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -154,94 +146,54 @@ const handleCloseModal = () => {
     setEditData(user);
   };
 
-  // ========== HANDLE SUBMIT UPDATE ==========
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   const payload = {
-  //     sales_person_name: formData.sales_person_name,
-  //     user_name: formData.user_name,
-  //     password: formData.password,
-  //     admin: formData.admin,
-  //     access: pageAccess.length === pageOptions.length ? "ALL" : pageAccess.join(","),
-  //     in_office: formData.in_office,
-  //   };
-
-  //   try {
-  //     const { error } = await supabase.from("users").insert([payload]);
-
-  //     if (error) throw error;
-
-  //     setOpen(false);
-  //     setFormData({
-  //       sales_person_name: "",
-  //       user_name: "",
-  //       password: "",
-  //       admin: "USER",
-  //       access: "",
-  //       in_office: "NO",
-  //     });
-
-  //     setPageAccess([]);
-  //     fetchUsers();
-  //   } catch (error) {
-  //     console.error("Error adding user:", error);
-  //   }
-  // };
-
-
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setErrorMsg("");
+    e.preventDefault();
+    setErrorMsg("");
 
-  const payload = {
-    sales_person_name: formData.sales_person_name,
-    user_name: formData.user_name,
-    password: formData.password,
-    admin: formData.admin,
-    access:
-      pageAccess.length === pageOptions.length
-        ? "ALL"
-        : pageAccess.join(","),
-    in_office: formData.in_office,
-  };
+    const payload = {
+      sales_person_name: formData.sales_person_name,
+      user_name: formData.user_name,
+      password: formData.password,
+      admin: formData.admin,
+      access:
+        pageAccess.length === pageOptions.length ? "ALL" : pageAccess.join(","),
+      in_office: formData.in_office,
+    };
 
- try {
-  const { error } = await supabase.from("users").insert([payload]);
+    try {
+      const { error } = await supabase.from("users").insert([payload]);
 
-  if (error) {
-    if (error.message.includes("duplicate") || error.code === "23505") {
-      setErrorMsg("Username already exists ❌");
-    } else {
-      setErrorMsg("Something went wrong ❌");
+      if (error) {
+        if (error.message.includes("duplicate") || error.code === "23505") {
+          setErrorMsg("Username already exists ❌");
+        } else {
+          setErrorMsg("Something went wrong ❌");
+        }
+        return;
+      }
+
+      // ✅ SUCCESS MESSAGE
+      setSuccessMsg("User created successfully ✅");
+
+      setOpen(false);
+      setFormData({
+        sales_person_name: "",
+        user_name: "",
+        password: "",
+        admin: "USER",
+        access: "",
+        in_office: "NO",
+      });
+
+      setPageAccess([]);
+      fetchUsers();
+
+      // 🔥 auto hide after 3 sec
+      setTimeout(() => setSuccessMsg(""), 3000);
+    } catch (error) {
+      setErrorMsg("Server error ❌");
     }
-    return;
-  }
-
-  // ✅ SUCCESS MESSAGE
-  setSuccessMsg("User created successfully ✅");
-
-  setOpen(false);
-  setFormData({
-    sales_person_name: "",
-    user_name: "",
-    password: "",
-    admin: "USER",
-    access: "",
-    in_office: "NO",
-  });
-
-  setPageAccess([]);
-  fetchUsers();
-
-  // 🔥 auto hide after 3 sec
-  setTimeout(() => setSuccessMsg(""), 3000);
-
-} catch (error) {
-  setErrorMsg("Server error ❌");
-}
-};
-
+  };
 
   const handleUpdate = async (id) => {
     const payload = {};
@@ -281,22 +233,22 @@ const handleCloseModal = () => {
     }
   };
 
-
- 
   // ================= FILTER LOGIC =================
   const filteredUsers = users.filter((u) => {
     // 1. Sales Person Filter
     const matchSales = salesPersonFilter
-      ? u.sales_person_name?.toLowerCase().includes(salesPersonFilter.toLowerCase())
+      ? u.sales_person_name
+          ?.toLowerCase()
+          .includes(salesPersonFilter.toLowerCase())
       : true;
-      
+
     // 2. Global Search
     const matchGlobal = globalSearch
       ? Object.values(u).some(
           (val) =>
             val !== null &&
             val !== undefined &&
-            val.toString().toLowerCase().includes(globalSearch.toLowerCase())
+            val.toString().toLowerCase().includes(globalSearch.toLowerCase()),
         )
       : true;
 
@@ -368,7 +320,7 @@ const handleCloseModal = () => {
         <div className="bg-white rounded-xl p-4 shadow border border-gray-100">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-gray-500 text-sm">Admin Users</p>
+              <p className="text-gray-500 text-sm">Admin</p>
               <p className="text-2xl font-bold text-gray-900">
                 {users.filter((u) => u.admin === "ADMIN").length}
               </p>
@@ -395,7 +347,7 @@ const handleCloseModal = () => {
         <div className="bg-white rounded-xl p-4 shadow border border-gray-100">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-gray-500 text-sm">Regular Users</p>
+              <p className="text-gray-500 text-sm">Users</p>
               <p className="text-2xl font-bold text-gray-900">
                 {users.filter((u) => u.admin === "USER").length}
               </p>
@@ -453,7 +405,6 @@ const handleCloseModal = () => {
               User Accounts
             </h2>
             <div className="flex items-center gap-3 text-sm w-full lg:w-auto">
-              
               {/* Sales Person Datalist Input */}
               <div className="relative flex-1 lg:w-48">
                 <input
@@ -465,7 +416,11 @@ const handleCloseModal = () => {
                   className="w-full border border-gray-300 rounded bg-white px-3 py-1.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none"
                 />
                 <datalist id="sales-person-list">
-                  {[...new Set(users.map(u => u.sales_person_name).filter(Boolean))].map((name, idx) => (
+                  {[
+                    ...new Set(
+                      users.map((u) => u.sales_person_name).filter(Boolean),
+                    ),
+                  ].map((name, idx) => (
                     <option key={idx} value={name} />
                   ))}
                 </datalist>
@@ -474,8 +429,18 @@ const handleCloseModal = () => {
               {/* Global Search */}
               <div className="relative flex-1 lg:w-64">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-2.5">
-                  <svg className="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  <svg
+                    className="w-4 h-4 text-gray-400"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
                   </svg>
                 </span>
                 <input
@@ -497,8 +462,18 @@ const handleCloseModal = () => {
                   className="text-gray-500 hover:text-red-500 bg-white border border-gray-300 p-1.5 rounded transition-colors flex-shrink-0"
                   title="Clear Filters"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               )}
@@ -519,7 +494,8 @@ const handleCloseModal = () => {
           <table className="w-full text-sm">
             <thead className="sticky top-0 z-30">
               <tr className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
-                <th className="px-4 py-3 text-center font-medium rounded-tl-xl">
+                <th className="px-4 py-3 text-center font-medium rounded-tl-xl">S.No</th>
+                <th className="px-4 py-3 text-center font-medium ">
                   Sales Person
                 </th>
                 <th className="px-4 py-3 text-center font-medium">User Name</th>
@@ -530,15 +506,22 @@ const handleCloseModal = () => {
                 <th className="px-4 py-3 text-center font-medium rounded-tr-xl">
                   Actions
                 </th>
-               </tr>
+              </tr>
             </thead>
 
             <tbody>
-              {filteredUsers.map((u) => (
-                <tr
-                  key={u.id}
-                  className="border-b border-gray-100 hover:bg-purple-50 transition-all duration-150"
-                >
+              {filteredUsers.map((u, index) => (
+    <tr
+      key={u.id}
+      className="border-b border-gray-100 hover:bg-purple-50 transition-all duration-150"
+    >
+                  <td className="px-4 py-4 text-center">
+        <span className="text-sm font-medium text-gray-600">
+          {index + 1}
+        </span>
+      </td>
+
+
                   {/* SALES PERSON NAME COLUMN */}
                   <td className="px-4 py-4">
                     <div className="flex items-center">
@@ -565,7 +548,7 @@ const handleCloseModal = () => {
                         <div className="text-gray-500 text-xs">ID: {u.id}</div>
                       </div>
                     </div>
-                   </td>
+                  </td>
 
                   {/* USER NAME COLUMN */}
                   <td className="px-4 py-4 text-center">
@@ -579,7 +562,7 @@ const handleCloseModal = () => {
                     ) : (
                       <span className="text-sm font-medium">{u.user_name}</span>
                     )}
-                   </td>
+                  </td>
 
                   {/* PASSWORD COLUMN */}
                   <td className="px-4 py-4 text-center">
@@ -595,7 +578,7 @@ const handleCloseModal = () => {
                         {u.password}
                       </span>
                     )}
-                   </td>
+                  </td>
 
                   {/* ADMIN COLUMN */}
                   <td className="px-4 py-4 text-center">
@@ -616,7 +599,7 @@ const handleCloseModal = () => {
                         {u.admin}
                       </span>
                     )}
-                   </td>
+                  </td>
 
                   {/* ACCESS COLUMN */}
                   <td className="px-4 py-4 text-center">
@@ -634,7 +617,7 @@ const handleCloseModal = () => {
                     ) : (
                       <span className="text-gray-400 text-sm">Not set</span>
                     )}
-                   </td>
+                  </td>
 
                   {/* IN OFFICE COLUMN */}
                   <td className="px-4 py-4 text-center">
@@ -655,7 +638,7 @@ const handleCloseModal = () => {
                         {u.in_office || "NO"}
                       </span>
                     )}
-                   </td>
+                  </td>
 
                   {/* ACTIONS COLUMN */}
                   <td className="px-4 py-4 text-center">
@@ -734,11 +717,11 @@ const handleCloseModal = () => {
                         </button>
                       </div>
                     )}
-                   </td>
-                 </tr>
+                  </td>
+                </tr>
               ))}
             </tbody>
-           </table>
+          </table>
         </div>
 
         <div className="px-6 py-4 border-t border-gray-100 text-sm text-gray-500">
@@ -771,7 +754,11 @@ const handleCloseModal = () => {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none"
                 />
                 <datalist id="sales-person-list-mobile">
-                  {[...new Set(users.map(u => u.sales_person_name).filter(Boolean))].map((name, idx) => (
+                  {[
+                    ...new Set(
+                      users.map((u) => u.sales_person_name).filter(Boolean),
+                    ),
+                  ].map((name, idx) => (
                     <option key={idx} value={name} />
                   ))}
                 </datalist>
@@ -779,8 +766,18 @@ const handleCloseModal = () => {
 
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <svg className="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  <svg
+                    className="w-4 h-4 text-gray-400"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
                   </svg>
                 </span>
                 <input
@@ -975,7 +972,9 @@ const handleCloseModal = () => {
                         <option value="NO">NO</option>
                       </select>
                     ) : (
-                      <p className="text-sm font-medium">{u.in_office || "NO"}</p>
+                      <p className="text-sm font-medium">
+                        {u.in_office || "NO"}
+                      </p>
                     )}
                   </div>
 
@@ -1034,17 +1033,17 @@ const handleCloseModal = () => {
               </p>
             </div>
 
-  {errorMsg && (
-  <div className="bg-red-100 text-red-700 p-2 rounded text-sm">
-    {errorMsg}
-  </div>
-)}
+            {errorMsg && (
+              <div className="bg-red-100 text-red-700 p-2 rounded text-sm">
+                {errorMsg}
+              </div>
+            )}
 
-{successMsg && (
-  <div className="bg-green-100 text-green-700 p-2 rounded text-sm">
-    {successMsg}
-  </div>
-)}
+            {successMsg && (
+              <div className="bg-green-100 text-green-700 p-2 rounded text-sm">
+                {successMsg}
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1072,28 +1071,28 @@ const handleCloseModal = () => {
                 />
               </div>
 
-               <div className="relative">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        Password
-      </label>
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
 
-      <input
-        className="border border-gray-300 rounded-lg px-4 py-3 w-full pr-10 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-        name="password"
-        type={showPassword ? "text" : "password"}
-        placeholder="Enter password"
-        onChange={handleChange}
-        required
-      />
+                <input
+                  className="border border-gray-300 rounded-lg px-4 py-3 w-full pr-10 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter password"
+                  onChange={handleChange}
+                  required
+                />
 
-      {/* Eye Icon */}
-      <span
-        onClick={() => setShowPassword(!showPassword)}
-        className="absolute right-3 top-10 cursor-pointer text-gray-500"
-      >
-        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-      </span>
-    </div>        
+                {/* Eye Icon */}
+                <span
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-10 cursor-pointer text-gray-500"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </span>
+              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -1147,7 +1146,7 @@ const handleCloseModal = () => {
 
                 {/* Dropdown */}
                 {openPageBox && (
- <div className="absolute z-50 bottom-full mb-1 w-full max-h-64 overflow-y-auto border bg-white rounded-lg shadow-lg p-3 space-y-2">
+                  <div className="absolute z-50 bottom-full mb-1 w-full max-h-64 overflow-y-auto border bg-white rounded-lg shadow-lg p-3 space-y-2">
                     {loading ? (
                       <div className="text-center py-4">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
