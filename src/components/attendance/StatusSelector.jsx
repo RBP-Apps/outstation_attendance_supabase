@@ -1,4 +1,4 @@
-const StatusSelector = ({ value, onChange, error }) => {
+const StatusSelector = ({ value, onChange, error, completedStatuses = [] }) => {
   return (
     <div className="space-y-2">
       <label className="block mb-3 text-sm font-semibold text-slate-700">
@@ -13,9 +13,15 @@ const StatusSelector = ({ value, onChange, error }) => {
         }`}
       >
         <option value="">Select status</option>
-        <option value="IN">IN</option>
-        <option value="MID">MID</option>
-        <option value="OUT">OUT</option>
+        <option value="IN" disabled={completedStatuses.includes("IN")}>
+          IN {completedStatuses.includes("IN") ? "(Already done)" : ""}
+        </option>
+        <option value="MID" disabled={completedStatuses.includes("MID")}>
+          MID {completedStatuses.includes("MID") ? "(Already done)" : ""}
+        </option>
+        <option value="OUT" disabled={completedStatuses.includes("OUT")}>
+          OUT {completedStatuses.includes("OUT") ? "(Already done)" : ""}
+        </option>
         <option value="Leave">Leave</option>
       </select>
       {error && (

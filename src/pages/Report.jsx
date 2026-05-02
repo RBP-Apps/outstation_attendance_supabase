@@ -587,6 +587,7 @@ const GroupedReport = () => {
                       <th className="px-4 py-3">Date</th>
                       <th className="px-4 py-3">User Details</th>
                       <th className="px-4 py-3">Check-In</th>
+                      <th className="px-4 py-3">Check-MID</th>
                       <th className="px-4 py-3">Check-Out</th>
                       <th className="px-4 py-3">Total Hours</th>
                       <th className="px-4 py-3">Status</th>
@@ -594,7 +595,7 @@ const GroupedReport = () => {
                       <th className="px-4 py-3 text-center">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-gray-100 text-nowrap">
                     {filteredData.map((item, idx) => (
                       <motion.tr
                         key={`${item.name}_${item.date}`}
@@ -622,6 +623,12 @@ const GroupedReport = () => {
                           <div className="flex items-center gap-2 text-sm text-gray-600">
                             <Clock className="w-3 h-3 text-green-600" />
                             <span>{item.firstIn || '--:--'}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Clock className="w-3 h-3 text-green-600" />
+                            <span>{item.midEntries || '--:--'}</span>
                           </div>
                         </td>
                         <td className="px-4 py-3">

@@ -270,8 +270,13 @@ const AttendanceForm = ({
 
     if (formData?.status === "MID") {
       const indata = attendance.filter((item) => item.status === "IN");
+      const middata = attendance.filter((item) => item.status === "MID");
       if (indata.length === 0) {
         showToast("Please mark IN first before selecting MID", "error");
+        return;
+      }
+      if (middata.length > 0) {
+        showToast("Today Already marked MID", "error");
         return;
       }
     }
@@ -461,6 +466,9 @@ const AttendanceForm = ({
 
   const showLeaveFields = formData.status === "Leave";
 
+  // Calculate which statuses are already completed today
+  const completedStatuses = attendance.map((item) => item.status);
+
   return (
     <div className="overflow-hidden border shadow-xl bg-white/80 backdrop-blur-sm rounded-2xl border-white/20">
       <div className="px-8 py-6 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500">
@@ -478,6 +486,7 @@ const AttendanceForm = ({
             value={formData.status}
             onChange={handleInputChange}
             error={errors.status}
+            completedStatuses={completedStatuses}
           />
         </div>
 
